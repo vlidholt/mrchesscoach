@@ -1,0 +1,7 @@
+### Success rate on one theme (puzzle theme or mistake motif).
+class: ThemeStat
+fields:
+  key: String
+  name: String
+  attempts: int
+  successes: int

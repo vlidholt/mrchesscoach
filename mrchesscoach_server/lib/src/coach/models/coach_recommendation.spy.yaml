@@ -1,0 +1,9 @@
+### Something the coach suggests practising next.
+class: CoachRecommendation
+fields:
+  ### `puzzles`, `lesson`, `opening`, `mistakes` or `play`.
+  kind: String
+  ### A puzzle theme key, lesson id or opening id, depending on the kind.
+  ref: String?
+  title: String
+  body: String

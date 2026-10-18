@@ -1,0 +1,53 @@
+### The engine's verdict on one move of a game, plus the coach's explanation.
+class: MoveAnalysis
+table: move_analysis
+fields:
+  gameId: int
+  userId: UuidValue?, scope=serverOnly
+  ### Index of the move in the game's move list.
+  ply: int
+  uci: String
+  san: String
+  ### Whether the human played this move (otherwise the computer did).
+  byPlayer: bool
+  classification: MoveClass
+  ### The mover's winning chances (0-100) with best play before the move.
+  winBefore: double
+  ### The mover's winning chances (0-100) after the move.
+  winAfter: double
+  ### Move accuracy (0-100), as in game reviews.
+  accuracy: double
+  ### Evaluation after the move, from White's point of view.
+  evalCp: int?
+  evalMate: int?
+  ### The engine's best move in the position before the move.
+  bestUci: String?
+  bestSan: String?
+  ### The engine's main line from the position before the move (SAN).
+  bestLine: List<String>
+  ### The best continuation after the played move (SAN).
+  replyLine: List<String>
+  ### The first move of that continuation (UCI), for drawing an arrow.
+  replyUci: String?
+  ### The position before the move.
+  fenBefore: String
+  ### The coach's short verdict, e.g. "Hangs the knight". Null until asked.
+  headline: String?
+  ### The coach's explanation. Null until asked.
+  explanation: String?
+  ### What to remember from this move, as one sentence.
+  lesson: String?
+  ### The tactical or positional theme behind the verdict.
+  motif: String?
+  ### The player took the move back after the coach's warning. Kept for
+  ### the mistake trainer; not part of the game any more.
+  retracted: bool, default=false
+  ### Practice attempts on this position in the mistake trainer.
+  drillAttempts: int, default=0
+  drillSuccesses: int, default=0
+  createdAt: DateTime, default=now
+indexes:
+  move_analysis_game_idx:
+    fields: gameId, ply
+  move_analysis_user_idx:
+    fields: userId, classification

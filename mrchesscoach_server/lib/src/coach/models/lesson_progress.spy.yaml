@@ -1,0 +1,16 @@
+### Whether a user completed an opening course or position lesson.
+class: LessonProgress
+table: lesson_progress
+serverOnly: true
+fields:
+  userId: UuidValue
+  lessonId: String
+  ### `opening` or `lesson`.
+  kind: String
+  completed: bool, default=false
+  attempts: int, default=0
+  updatedAt: DateTime, default=now
+indexes:
+  lesson_progress_idx:
+    fields: userId, lessonId
+    unique: true

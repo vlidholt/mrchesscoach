@@ -1,0 +1,11 @@
+### One move of an opening course.
+class: OpeningStep
+fields:
+  san: String
+  uci: String
+  ### The position after the move.
+  fen: String
+  comment: String
+  arrows: List<String>
+  ### Whether the student plays this move in the course.
+  byStudent: bool

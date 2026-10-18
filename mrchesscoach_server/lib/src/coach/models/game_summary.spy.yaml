@@ -1,0 +1,14 @@
+### The coach's written summary of a finished game.
+class: GameSummary
+table: game_summary
+serverOnly: true
+fields:
+  gameId: int
+  summary: String
+  ### How many moves the game had when it was summarised.
+  plies: int
+  createdAt: DateTime, default=now
+indexes:
+  game_summary_game_idx:
+    fields: gameId
+    unique: true

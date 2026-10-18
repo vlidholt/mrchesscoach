@@ -1,0 +1,56 @@
+### A game of chess between a signed-in player and the computer.
+class: ChessGame
+table: chess_game
+fields:
+  ### The auth user who plays this game.
+  userId: UuidValue?, scope=serverOnly
+  ### Index of the difficulty level, see `ChessLevel`.
+  level: int
+  ### The side the human plays.
+  playerColor: PlayerColor
+  ### Moves played from the start position, in UCI notation (e.g. `e2e4`).
+  moves: List<String>
+  ### The same moves in standard algebraic notation (e.g. `e4`, `Nf3`).
+  sanMoves: List<String>
+  ### The current position as FEN.
+  fen: String
+  ### Whether the game is still going, and if not, how it ended.
+  status: GameStatus
+  ### Why the game ended; null while it is active.
+  endReason: GameEndReason?
+  ### Engine evaluation in centipawns from White's point of view.
+  evalCp: int?
+  ### Moves to mate from White's point of view (negative: Black mates).
+  evalMate: int?
+  ### Legal moves for the player when it is their turn, UCI to SAN (e.g.
+  ### `g1f3` to `Nf3`). Filled in by the server on every response.
+  legalMoves: Map<String, String>?, !persist
+  ### Number of hints the player asked for.
+  hintsUsed: int, default=0
+  ### Number of moves the player took back.
+  takebacks: int, default=0
+  ### Whether the AI coach is on: live move verdicts and pauses after
+  ### mistakes. Every game is analysed for the review either way.
+  coachEnabled: bool, default=true
+  ### The start position when the game did not start from the initial
+  ### position (lessons).
+  startFen: String?
+  ### The opening course or position lesson this game practises, if any.
+  lessonId: String?
+  ### The coach paused the game after the player's mistake and waits for
+  ### the player to retry or play on.
+  awaitingDecision: bool, default=false
+  ### How often the player retried a move after a coach warning.
+  retries: int, default=0
+  ### Engine analysis of recent positions, as JSON.
+  analysisCache: String?, scope=serverOnly
+  ### The coach's verdict on the player's last move. Filled in by the
+  ### server after a move.
+  lastFeedback: MoveAnalysis?, !persist
+  ### The verdict on the computer's last move. Filled in by the server.
+  opponentFeedback: MoveAnalysis?, !persist
+  createdAt: DateTime, default=now
+  updatedAt: DateTime, default=now
+indexes:
+  chess_game_user_idx:
+    fields: userId, status

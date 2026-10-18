@@ -1,0 +1,4 @@
+### Thrown when a game action is not allowed, such as an illegal move.
+exception: ChessGameException
+fields:
+  message: String

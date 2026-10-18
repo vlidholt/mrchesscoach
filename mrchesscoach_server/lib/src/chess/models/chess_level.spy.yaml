@@ -1,0 +1,11 @@
+### A difficulty level the computer can play at.
+class: ChessLevel
+fields:
+  ### Index used when starting a game.
+  index: int
+  ### Display name, e.g. "Club player".
+  name: String
+  ### One-line description for the level picker.
+  description: String
+  ### Approximate playing strength (Elo).
+  rating: int

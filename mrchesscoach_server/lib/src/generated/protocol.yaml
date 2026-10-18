@@ -1,0 +1,45 @@
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+game:
+  - levels:
+  - startGame:
+  - activeGame:
+  - finishedGames:
+  - getGame:
+  - move:
+  - retry:
+  - playOn:
+  - undo:
+  - resign:
+coach:
+  - explainMove:
+  - moveVerdicts:
+  - hint:
+  - threat:
+  - ask:
+  - review:
+learn:
+  - openings:
+  - opening:
+  - completeOpening:
+  - legalMoves:
+  - startOpeningGame:
+  - lessons:
+  - startLesson:
+  - puzzleSets:
+  - nextPuzzle:
+  - puzzleMove:
+  - explainPuzzle:
+  - nextMistake:
+  - mistakeMove:
+progress:
+  - progress:

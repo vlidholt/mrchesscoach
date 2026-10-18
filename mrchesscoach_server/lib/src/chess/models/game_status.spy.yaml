@@ -1,0 +1,9 @@
+### The state of a chess game, from the human player's point of view.
+enum: GameStatus
+values:
+  - active
+  - playerWon
+  - computerWon
+  - draw
+  ### The player started a new game without finishing this one.
+  - abandoned

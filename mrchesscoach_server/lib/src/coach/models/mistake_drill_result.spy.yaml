@@ -1,0 +1,9 @@
+### The result of trying a mistake drill.
+class: MistakeDrillResult
+fields:
+  correct: bool
+  ### The engine's best move.
+  bestUci: String
+  bestSan: String
+  ### The coach's explanation of the position.
+  explanation: String

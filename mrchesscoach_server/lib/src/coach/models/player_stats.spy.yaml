@@ -1,0 +1,18 @@
+### Per-user training stats.
+class: PlayerStats
+table: player_stats
+serverOnly: true
+fields:
+  userId: UuidValue
+  puzzleRating: int, default=1200
+  puzzleStreak: int, default=0
+  bestPuzzleStreak: int, default=0
+  puzzlesSolved: int, default=0
+  puzzlesFailed: int, default=0
+  ### The last day (yyyy-mm-dd, UTC) with activity.
+  lastActiveDay: String?
+  dayStreak: int, default=0
+indexes:
+  player_stats_user_idx:
+    fields: userId
+    unique: true

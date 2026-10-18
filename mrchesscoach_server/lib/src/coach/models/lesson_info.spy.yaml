@@ -1,0 +1,17 @@
+### A position lesson: a technique to practise against the engine.
+class: LessonInfo
+fields:
+  id: String
+  ### `endgame` or `middlegame`.
+  category: String
+  title: String
+  tagline: String
+  concept: String
+  tips: List<String>
+  fen: String
+  side: PlayerColor
+  ### `win`, `draw` or `keepAdvantage`.
+  goal: String
+  targetMoves: int
+  difficulty: int
+  completed: bool

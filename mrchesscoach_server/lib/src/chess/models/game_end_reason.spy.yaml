@@ -1,0 +1,12 @@
+### Why a chess game ended.
+enum: GameEndReason
+values:
+  - checkmate
+  - resignation
+  - stalemate
+  - insufficientMaterial
+  - threefoldRepetition
+  - fiftyMoveRule
+  - abandoned
+  ### The lesson goal was reached.
+  - goalReached

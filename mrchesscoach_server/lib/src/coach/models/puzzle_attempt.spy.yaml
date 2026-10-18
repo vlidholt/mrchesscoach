@@ -1,0 +1,16 @@
+### One rated puzzle attempt.
+class: PuzzleAttempt
+table: puzzle_attempt
+serverOnly: true
+fields:
+  userId: UuidValue
+  puzzleId: String
+  solved: bool
+  puzzleRating: int
+  ratingAfter: int
+  ### Space-separated Lichess themes of the puzzle.
+  themes: String
+  createdAt: DateTime, default=now
+indexes:
+  puzzle_attempt_user_idx:
+    fields: userId, createdAt

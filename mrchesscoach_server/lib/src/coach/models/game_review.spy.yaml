@@ -1,0 +1,19 @@
+### A full review of a game: accuracy, verdicts on every move and key moments.
+class: GameReview
+fields:
+  gameId: int
+  playerAccuracy: double
+  opponentAccuracy: double
+  ### Every move with its verdict, in order.
+  moves: List<MoveAnalysis>
+  ### Plies worth studying: the biggest swings and the best moves.
+  keyMoments: List<int>
+  ### Count of each classification for the player's moves, by name.
+  playerCounts: Map<String, int>
+  opponentCounts: Map<String, int>
+  ### White's winning chances (0-100) before each move and after the last.
+  winGraph: List<double>
+  ### The coach's written summary, if available.
+  summary: String?
+  ### Name of the opening, if recognised.
+  openingName: String?

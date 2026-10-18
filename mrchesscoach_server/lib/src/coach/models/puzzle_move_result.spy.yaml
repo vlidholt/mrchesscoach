@@ -1,0 +1,15 @@
+### The result of one move in a puzzle.
+class: PuzzleMoveResult
+fields:
+  correct: bool
+  ### The puzzle is complete.
+  solved: bool
+  ### The opponent's reply (UCI), when the puzzle continues.
+  replyUci: String?
+  ### The full solution (UCI), revealed after a wrong move.
+  solution: List<String>?
+  ### Legal moves in the new position, UCI to SAN.
+  legalMoves: Map<String, String>?
+  ratingBefore: int
+  ratingAfter: int
+  streak: int

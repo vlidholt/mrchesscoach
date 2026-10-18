@@ -1,0 +1,15 @@
+### An opening course with its moves and commentary.
+class: OpeningCourseInfo
+fields:
+  id: String
+  name: String
+  eco: String
+  side: PlayerColor
+  level: String
+  tagline: String
+  summary: String
+  ideas: List<String>
+  steps: List<OpeningStep>
+  ### The Lichess opening tag used for trap puzzles.
+  family: String
+  completed: bool

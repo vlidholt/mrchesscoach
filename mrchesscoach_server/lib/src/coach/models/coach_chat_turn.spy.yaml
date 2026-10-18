@@ -1,0 +1,5 @@
+### One message in a conversation with the coach.
+class: CoachChatTurn
+fields:
+  fromCoach: bool
+  text: String

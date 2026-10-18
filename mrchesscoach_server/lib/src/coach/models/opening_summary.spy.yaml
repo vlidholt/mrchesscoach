@@ -1,0 +1,14 @@
+### An opening course in the catalog.
+class: OpeningSummary
+fields:
+  id: String
+  name: String
+  eco: String
+  side: PlayerColor
+  level: String
+  tagline: String
+  plies: int
+  ### The position at the end of the main line, for the card preview.
+  finalFen: String
+  trapCount: int
+  completed: bool

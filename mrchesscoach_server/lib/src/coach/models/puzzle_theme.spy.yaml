@@ -1,0 +1,11 @@
+### A set of puzzles the player can train.
+class: PuzzleTheme
+fields:
+  key: String
+  name: String
+  description: String
+  ### `tactics`, `mates`, `endgames` or `openings`.
+  category: String
+  count: int
+  attempts: int
+  successes: int

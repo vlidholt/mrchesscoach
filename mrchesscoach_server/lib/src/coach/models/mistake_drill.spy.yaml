@@ -1,0 +1,13 @@
+### A position from the player's own games where they went wrong.
+class: MistakeDrill
+fields:
+  analysisId: int
+  fen: String
+  side: PlayerColor
+  ### What the player played in the game.
+  playedSan: String
+  classification: MoveClass
+  legalMoves: Map<String, String>
+  ### How many positions are waiting, including this one.
+  remaining: int
+  playedAt: DateTime

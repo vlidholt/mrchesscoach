@@ -1,0 +1,18 @@
+### A puzzle as sent to the app. The solution stays on the server.
+class: PuzzleInfo
+fields:
+  id: String
+  ### The position before the opponent's setup move.
+  fen: String
+  ### The opponent's move that sets up the puzzle (UCI).
+  setupMove: String
+  rating: int
+  themes: List<String>
+  ### Number of moves the solver has to find.
+  solutionMoves: int
+  ### Legal moves after the setup move, UCI to SAN.
+  legalMoves: Map<String, String>
+  ### The player's puzzle rating when the puzzle was served.
+  playerRating: int
+  ### A friendly name for the set the puzzle came from, e.g. "Forks".
+  setName: String?

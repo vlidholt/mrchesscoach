@@ -1,0 +1,8 @@
+### What the opponent would do if it were their move.
+class: ThreatInsight
+fields:
+  hasThreat: bool
+  ### The opponent's threatened move.
+  uci: String?
+  san: String?
+  text: String

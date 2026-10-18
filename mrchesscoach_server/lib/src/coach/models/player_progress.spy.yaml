@@ -1,0 +1,29 @@
+### Everything the progress screen shows.
+class: PlayerProgress
+fields:
+  gamesPlayed: int
+  wins: int
+  draws: int
+  losses: int
+  ### Accuracy of recent games, oldest first.
+  recentAccuracy: List<double>
+  averageAccuracy: double?
+  puzzleRating: int
+  ### Puzzle rating after each recent attempt, oldest first.
+  puzzleRatingHistory: List<int>
+  puzzlesSolved: int
+  puzzlesFailed: int
+  puzzleStreak: int
+  bestPuzzleStreak: int
+  ### Days in a row with activity.
+  dayStreak: int
+  themeStats: List<ThemeStat>
+  ### The themes behind the player's mistakes in games.
+  motifStats: List<ThemeStat>
+  ### Totals of each classification over the player's games, by name.
+  classTotals: Map<String, int>
+  lessonsCompleted: int
+  openingsCompleted: int
+  ### Mistakes from the player's games waiting to be practised.
+  mistakesToReview: int
+  recommendations: List<CoachRecommendation>

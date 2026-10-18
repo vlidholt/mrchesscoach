@@ -1,0 +1,10 @@
+### A step of the hint ladder: 1 = the idea, 2 = the piece, 3 = the move.
+class: CoachHint
+fields:
+  level: int
+  text: String
+  ### The square of the piece to move (from level 2).
+  square: String?
+  ### The move (level 3).
+  uci: String?
+  san: String?

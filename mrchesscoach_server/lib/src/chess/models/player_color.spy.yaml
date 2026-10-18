@@ -1,0 +1,5 @@
+### The side a player plays.
+enum: PlayerColor
+values:
+  - white
+  - black

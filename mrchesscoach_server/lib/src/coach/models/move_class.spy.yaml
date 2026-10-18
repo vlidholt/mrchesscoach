@@ -1,0 +1,13 @@
+### How good a move was, in the style of chess.com move classifications.
+enum: MoveClass
+values:
+  - brilliant
+  - great
+  - best
+  - excellent
+  - good
+  - book
+  - inaccuracy
+  - mistake
+  - miss
+  - blunder
