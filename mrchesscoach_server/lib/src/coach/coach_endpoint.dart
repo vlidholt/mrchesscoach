@@ -298,7 +298,7 @@ class CoachEndpoint extends Endpoint {
       result: [
         switch (game.status) {
           GameStatus.playerWon => 'the student won',
-          GameStatus.computerWon => 'the computer won',
+          GameStatus.computerWon => 'you (the coach) won',
           GameStatus.draw => 'draw',
           _ => 'unfinished',
         },

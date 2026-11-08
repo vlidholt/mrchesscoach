@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart' show MoveClass;
 
 import '../game/chess_model.dart';
 import '../theme.dart';
+import 'fx.dart';
 import 'move_badge.dart';
 
 /// The asset for [piece], e.g. `assets/images/pieces/wn.png`.
@@ -20,12 +22,20 @@ Iterable<String> get allBoardAssets => [
 ];
 
 /// Where the 8x8 grid sits inside `board.png`, as fractions of its size.
-const _gridLeft = 0.0507;
-const _gridTop = 0.0534;
-const _gridRight = 0.9520;
-const _gridBottom = 0.9528;
+const _gridLeft = 0.0618;
+const _gridTop = 0.0599;
+const _gridRight = 0.9382;
+const _gridBottom = 0.9401;
 
 const _slide = Duration(milliseconds: 280);
+
+/// The centre of [square] on a [ChessBoardView] [size] pixels wide, seen
+/// from [orientation]. For effects fired from outside the board.
+Offset boardSquareCenter(Square square, double size, Side orientation) =>
+    _Geometry(size, orientation).center(square);
+
+/// The width of one square on a [ChessBoardView] [size] pixels wide.
+double boardSquareSize(double size) => _Geometry(size, Side.white).square;
 
 /// An arrow drawn on the board, e.g. a hint or a threat.
 class BoardArrow {
@@ -61,6 +71,7 @@ class ChessBoardView extends StatefulWidget {
     this.inCheck = false,
     this.markedSquare,
     this.badge,
+    this.effects = true,
   });
 
   final BoardState position;
@@ -87,6 +98,10 @@ class ChessBoardView extends StatefulWidget {
   /// A verdict badge shown on a square, usually the last move's target.
   final (Square, MoveClass)? badge;
 
+  /// Particles and light for moves, captures, checks and verdicts. Off while
+  /// browsing through earlier positions.
+  final bool effects;
+
   @override
   State<ChessBoardView> createState() => _ChessBoardViewState();
 }
@@ -102,9 +117,17 @@ class _ChessBoardViewState extends State<ChessBoardView> {
 
   /// Sprites that should jump instead of slide (they were dropped by hand).
   final _instant = <int>{};
+  final _instantSquares = <Square>{};
 
   /// A pawn move waiting for the user to pick the promotion piece.
   ({Square from, Square to})? _promotion;
+
+  /// Glowing streaks behind pieces that are sliding.
+  final _trails = <_Trail>[];
+  int _nextTrail = 0;
+
+  /// The current board geometry, for effects fired outside of build.
+  _Geometry? _geometry;
 
   @override
   void initState() {
@@ -122,6 +145,16 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     if (old.position.placementKey != widget.position.placementKey) {
       _reconcile(widget.position);
     }
+    if (widget.effects) {
+      final badge = widget.badge;
+      if (badge != null && badge != old.badge) {
+        _later(_slide, () => _verdictFx(badge.$1, badge.$2));
+      }
+      if (widget.inCheck && !old.inCheck) {
+        final king = widget.position.kingOf(widget.position.turn);
+        if (king != null) _later(_slide, () => _checkFx(king));
+      }
+    }
     if (widget.legalMoves.isEmpty) {
       _selected = null;
       _drag = null;
@@ -135,6 +168,7 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     final remaining = [..._sprites];
     final next = <_Sprite>[];
     final added = <(Square, Piece)>[];
+    final moves = <(Square, Square, Piece, bool)>[];
 
     for (final MapEntry(key: square, value: piece) in board.pieces.entries) {
       final same = remaining.where(
@@ -169,10 +203,32 @@ class _ChessBoardViewState extends State<ChessBoardView> {
         final moved = candidates.first;
         remaining.remove(moved);
         next.add(_Sprite(moved.id, piece, square));
+        moves.add((
+          moved.square,
+          square,
+          piece,
+          moved.piece.role != piece.role,
+        ));
       } else {
         next.add(_Sprite(_nextId++, piece, square));
       }
     }
+
+    if (widget.effects && moves.length <= 2) {
+      for (final (from, to, piece, promoted) in moves) {
+        _moveFx(
+          from,
+          to,
+          piece,
+          promoted,
+          instant: _instantSquares.contains(from),
+        );
+      }
+      for (final ghost in remaining) {
+        _later(_slide * 0.8, () => _captureFx(ghost.square, ghost.piece));
+      }
+    }
+    _instantSquares.clear();
 
     // Whatever is left was captured.
     for (final ghost in remaining) {
@@ -200,6 +256,7 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     if (dropped) {
       final sprite = _sprites.where((s) => s.square == from).firstOrNull;
       if (sprite != null) _instant.add(sprite.id);
+      _instantSquares.add(from);
     }
     setState(() => _selected = null);
     if (_isPromotion(from, to)) {
@@ -223,6 +280,7 @@ class _ChessBoardViewState extends State<ChessBoardView> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final g = _Geometry(constraints.maxWidth, widget.orientation);
+          _geometry = g;
           return _buildBoard(g);
         },
       ),
@@ -294,6 +352,7 @@ class _ChessBoardViewState extends State<ChessBoardView> {
               _tint(g, focus, Palette.gold.withValues(alpha: 0.55), glow: true),
             if (checkedKing != null) _checkGlow(g, checkedKing),
             ..._coordinates(g),
+            for (final trail in _trails) _trail(g, trail),
             for (final t in targets)
               _target(g, t, widget.position.pieceAt(t) != null),
             for (final ghost in _ghosts) _ghost(g, ghost),
@@ -462,39 +521,276 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     );
   }
 
+  /// Files and ranks, written on the frame so they follow the orientation.
   Iterable<Widget> _coordinates(_Geometry g) sync* {
     // Too small to read on preview boards.
-    if (g.square < 24) return;
-    final fontSize = max(8.0, g.square * 0.15);
+    if (g.size < 180) return;
+    final fontSize = max(8.0, g.size * 0.033);
+    final style =
+        Typo.body(
+          fontSize,
+          weight: FontWeight.w800,
+          color: const Color(0xFFF1DFB8),
+        ).copyWith(
+          height: 1,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.7),
+              offset: const Offset(0, 1),
+              blurRadius: 2,
+            ),
+          ],
+        );
+    final frameBottom = Rect.fromLTRB(
+      g.grid.left,
+      g.grid.bottom,
+      g.grid.right,
+      g.size,
+    );
+    final frameLeft = Rect.fromLTRB(0, g.grid.top, g.grid.left, g.grid.bottom);
     for (var i = 0; i < 8; i++) {
-      // Files along the bottom row, ranks along the left column.
-      final fileSquare = g.squareAtGrid(i, 7);
-      final rankSquare = g.squareAtGrid(0, i);
-      for (final (square, text, align) in [
-        (fileSquare, fileSquare.fileName, Alignment.bottomRight),
-        (rankSquare, rankSquare.rankName, Alignment.topLeft),
-      ]) {
-        final light = square.isLight;
-        yield Positioned.fromRect(
-          rect: g.rect(square).deflate(g.square * 0.07),
-          child: IgnorePointer(
-            child: Align(
-              alignment: align,
-              child: Text(
-                text,
-                style: Typo.body(
-                  fontSize,
-                  weight: FontWeight.w800,
-                  color: light
-                      ? const Color(0xFF8A7650)
-                      : const Color(0xFFB59A62),
-                ).copyWith(height: 1),
-              ),
+      final file = g.squareAtGrid(i, 7);
+      final rank = g.squareAtGrid(0, i);
+      yield Positioned.fromRect(
+        rect: Rect.fromLTWH(
+          frameBottom.left + i * g.square,
+          frameBottom.top,
+          g.square,
+          frameBottom.height * 0.92,
+        ),
+        child: IgnorePointer(
+          child: Center(child: Text(file.fileName, style: style)),
+        ),
+      );
+      yield Positioned.fromRect(
+        rect: Rect.fromLTWH(
+          frameLeft.left + frameLeft.width * 0.08,
+          frameLeft.top + i * g.square,
+          frameLeft.width * 0.92,
+          g.square,
+        ),
+        child: IgnorePointer(
+          child: Center(child: Text(rank.rankName, style: style)),
+        ),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Effects
+
+  void _later(Duration delay, VoidCallback f) {
+    Timer(delay, () {
+      if (mounted) f();
+    });
+  }
+
+  /// Fires an effect at the centre of [square].
+  void _fxAt(
+    Square square,
+    void Function(FxScopeState s, Offset at, double sq) f,
+  ) {
+    final g = _geometry;
+    if (g == null) return;
+    context.fx(g.center(square), (s, at) => f(s, at, g.square));
+  }
+
+  void _moveFx(
+    Square from,
+    Square to,
+    Piece piece,
+    bool promoted, {
+    required bool instant,
+  }) {
+    final mine = piece.color == widget.orientation;
+    final color = mine ? Palette.gold : const Color(0xFFBFD4FF);
+    if (!instant && !MediaQuery.of(context).disableAnimations) {
+      final trail = _Trail(_nextTrail++, from, to, color);
+      _trails.add(trail);
+      _later(_slide + const Duration(milliseconds: 420), () {
+        setState(() => _trails.remove(trail));
+      });
+    }
+    _later(instant ? Duration.zero : _slide * 0.9, () {
+      _fxAt(to, (s, at, sq) {
+        s.fx
+          ..shockwave(at, color, radius: sq * 0.75, life: 0.4, width: sq * 0.04)
+          ..motes(
+            at.translate(0, sq * 0.3),
+            color.withValues(alpha: 0.7),
+            count: 5,
+            radius: sq * 0.3,
+            size: sq * 0.18,
+            rise: sq * 0.6,
+            life: 0.8,
+          );
+        if (promoted) {
+          s.fx
+            ..flare(at, Palette.gold, size: sq * 3)
+            ..stars(at, Palette.gold, count: 16, speed: sq * 4, size: sq * 0.4)
+            ..shockwave(at, Palette.gold, radius: sq * 2.4, width: sq * 0.08);
+        }
+      });
+    });
+  }
+
+  void _captureFx(Square square, Piece piece) {
+    final color = piece.color == Side.white
+        ? const Color(0xFFF4F1EA)
+        : const Color(0xFF3A3A40);
+    _fxAt(square, (s, at, sq) {
+      s.fx
+        ..shatter(at, color, size: sq, count: 16)
+        ..sparks(
+          at,
+          Palette.gold,
+          count: 18,
+          speed: sq * 5,
+          size: max(1.5, sq * 0.035),
+          gravity: sq * 10,
+          life: 0.6,
+        )
+        ..flare(at, const Color(0xFFFFE2A8), size: sq * 1.6, life: 0.35);
+    });
+  }
+
+  void _checkFx(Square king) {
+    _fxAt(king, (s, at, sq) {
+      s.fx
+        ..shockwave(
+          at,
+          const Color(0xFFFF5A3C),
+          radius: sq * 2.2,
+          width: sq * 0.07,
+        )
+        ..shockwave(
+          at,
+          const Color(0xFFFF8A5C),
+          radius: sq * 1.4,
+          width: sq * 0.05,
+          delay: 0.12,
+        )
+        ..sparks(
+          at,
+          const Color(0xFFFF6A3C),
+          count: 16,
+          speed: sq * 4,
+          size: max(1.5, sq * 0.03),
+          gravity: sq * 6,
+          life: 0.6,
+        );
+    });
+  }
+
+  void _verdictFx(Square square, MoveClass cls) {
+    final color = cls.color;
+    _fxAt(square, (s, at, sq) {
+      final fx = s.fx;
+      switch (cls) {
+        case MoveClass.brilliant:
+          fx
+            ..flare(at, color, size: sq * 4.2, life: 0.9)
+            ..stars(at, color, count: 22, speed: sq * 5, size: sq * 0.45)
+            ..sparks(
+              at,
+              Colors.white,
+              count: 30,
+              speed: sq * 7,
+              size: 2.5,
+              gravity: sq * 4,
+            )
+            ..shockwave(at, color, radius: sq * 3.4, width: sq * 0.1)
+            ..shockwave(
+              at,
+              Colors.white,
+              radius: sq * 2.2,
+              width: sq * 0.05,
+              delay: 0.1,
+            );
+        case MoveClass.great:
+          fx
+            ..flare(at, color, size: sq * 3.2, life: 0.8)
+            ..stars(at, color, count: 14, speed: sq * 4, size: sq * 0.4)
+            ..shockwave(at, color, radius: sq * 2.6, width: sq * 0.08);
+        case MoveClass.best:
+          fx
+            ..flare(at, color, size: sq * 2.2, life: 0.6)
+            ..stars(at, Palette.gold, count: 8, speed: sq * 3, size: sq * 0.32)
+            ..sparks(
+              at,
+              Palette.gold,
+              count: 16,
+              speed: sq * 4,
+              size: 2,
+              gravity: sq * 6,
+              life: 0.7,
+            );
+        case MoveClass.excellent || MoveClass.good || MoveClass.book:
+          fx.motes(
+            at,
+            color,
+            count: 7,
+            radius: sq * 0.35,
+            size: sq * 0.22,
+            rise: sq * 0.8,
+          );
+        case MoveClass.inaccuracy:
+          fx
+            ..smoke(
+              at,
+              size: sq * 0.7,
+              count: 6,
+              color: const Color(0xFF5A4A1E),
+            )
+            ..shockwave(at, color, radius: sq * 1.2, width: sq * 0.04);
+        case MoveClass.mistake:
+          fx
+            ..smoke(at, size: sq * 0.9, count: 9)
+            ..shockwave(at, color, radius: sq * 1.8, width: sq * 0.06);
+        case MoveClass.miss || MoveClass.blunder:
+          fx
+            ..smoke(at, size: sq * 1.1, count: 14)
+            ..sparks(
+              at,
+              color,
+              count: 24,
+              speed: sq * 5,
+              size: 2.5,
+              gravity: sq * 8,
+              life: 0.8,
+            )
+            ..shockwave(at, color, radius: sq * 2.8, width: sq * 0.09)
+            ..shockwave(
+              at,
+              color,
+              radius: sq * 1.6,
+              width: sq * 0.05,
+              delay: 0.15,
+            );
+      }
+    });
+  }
+
+  Widget _trail(_Geometry g, _Trail trail) {
+    return Positioned.fill(
+      key: ValueKey('trail-${trail.id}'),
+      child: IgnorePointer(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: _slide + const Duration(milliseconds: 400),
+          builder: (context, t, _) => CustomPaint(
+            painter: _TrailPainter(
+              g.center(trail.from),
+              g.center(trail.to),
+              g.square,
+              t,
+              _slide.inMilliseconds / (_slide.inMilliseconds + 400),
+              trail.color,
             ),
           ),
-        );
-      }
-    }
+        ),
+      ),
+    );
   }
 
   Widget _target(_Geometry g, Square square, bool capture) {
@@ -600,6 +896,10 @@ class _ChessBoardViewState extends State<ChessBoardView> {
                 color: Colors.black.withValues(alpha: 0.35),
                 blurRadius: size * 0.25,
                 offset: Offset(0, size * 0.2),
+              ),
+              BoxShadow(
+                color: Palette.gold.withValues(alpha: 0.35),
+                blurRadius: size * 0.4,
               ),
             ],
           ),
@@ -944,4 +1244,83 @@ class _PulsingRingState extends State<_PulsingRing>
       },
     );
   }
+}
+
+class _Trail {
+  _Trail(this.id, this.from, this.to, this.color);
+
+  final int id;
+  final Square from;
+  final Square to;
+  final Color color;
+}
+
+/// A comet tail that follows a sliding piece and then fades.
+class _TrailPainter extends CustomPainter {
+  _TrailPainter(
+    this.from,
+    this.to,
+    this.square,
+    this.t,
+    this.slideFraction,
+    this.color,
+  );
+
+  final Offset from;
+  final Offset to;
+  final double square;
+
+  /// 0..1 over the slide and the fade after it.
+  final double t;
+
+  /// The part of [t] spent sliding.
+  final double slideFraction;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final slide = Curves.easeOutCubic.transform(
+      (t / slideFraction).clamp(0.0, 1.0),
+    );
+    final fade = t <= slideFraction
+        ? 1.0
+        : 1 - (t - slideFraction) / (1 - slideFraction);
+    final head = Offset.lerp(from, to, slide)!;
+    // The tail lags behind the head.
+    final tailT = Curves.easeOutCubic.transform(
+      ((t - 0.12) / slideFraction).clamp(0.0, 1.0),
+    );
+    final tail = Offset.lerp(from, to, tailT * 0.95)!;
+    if ((head - tail).distance < 1) return;
+    final shader = ui.Gradient.linear(tail, head, [
+      color.withValues(alpha: 0),
+      color.withValues(alpha: 0.85 * fade),
+    ]);
+    final width = square * 0.34;
+    canvas.drawLine(
+      tail,
+      head,
+      Paint()
+        ..shader = shader
+        ..strokeWidth = width * 1.8
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, square * 0.18)
+        ..blendMode = BlendMode.plus,
+    );
+    canvas.drawLine(
+      tail,
+      head,
+      Paint()
+        ..shader = ui.Gradient.linear(tail, head, [
+          Colors.white.withValues(alpha: 0),
+          Colors.white.withValues(alpha: 0.7 * fade),
+        ])
+        ..strokeWidth = width * 0.35
+        ..strokeCap = StrokeCap.round
+        ..blendMode = BlendMode.plus,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TrailPainter old) => old.t != t;
 }

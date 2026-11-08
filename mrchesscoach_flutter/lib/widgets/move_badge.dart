@@ -97,7 +97,7 @@ class MoveBadge extends StatelessWidget {
               style: Typo.body(
                 size * (glyph.length > 1 ? 0.46 : 0.6),
                 color: Colors.white,
-                weight: FontWeight.w900,
+                weight: FontWeight.w800,
               ).copyWith(height: 1, letterSpacing: -0.5),
             )
           : Icon(classification.icon, size: size * 0.62, color: Colors.white),

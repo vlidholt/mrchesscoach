@@ -215,7 +215,7 @@ class _LearnViewState extends State<LearnView> {
                       title: 'Technique wins games',
                       subtitle:
                           'Classic positions every player should know. Play '
-                          'them out against full-strength Stockfish.',
+                          'them out against me at full strength.',
                     ),
                     const SizedBox(height: 16),
                     _lessonGrid(c.maxWidth - 2 * pad, 'endgame'),
@@ -838,7 +838,7 @@ class _LessonDialog extends StatelessWidget {
                         child: Text(
                           '${lessonGoalText(l)}, playing '
                           '${side == Side.white ? 'White' : 'Black'} against '
-                          'full-strength Stockfish.',
+                          'me at full strength.',
                           style: Typo.body(13, color: Palette.ivory),
                         ),
                       ),

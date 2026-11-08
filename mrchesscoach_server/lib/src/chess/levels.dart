@@ -26,21 +26,21 @@ class LevelSpec {
 const levelSpecs = <LevelSpec>[
   LevelSpec(
     name: 'Novice',
-    description: 'Just learning how the pieces move',
+    description: 'I play like I just learned the moves',
     rating: 400,
     strength: StrengthLimit.skill(0),
     limits: SearchLimits(depth: 1),
   ),
   LevelSpec(
     name: 'Beginner',
-    description: 'Knows the rules, still drops pieces',
+    description: 'I know the rules, but I drop pieces',
     rating: 700,
     strength: StrengthLimit.skill(0),
     limits: SearchLimits(depth: 3),
   ),
   LevelSpec(
     name: 'Casual',
-    description: 'A friendly game at the kitchen table',
+    description: 'A relaxed game at the kitchen table',
     rating: 1000,
     strength: StrengthLimit.skill(0),
     limits: SearchLimits(depth: 6),
@@ -54,14 +54,14 @@ const levelSpecs = <LevelSpec>[
   ),
   LevelSpec(
     name: 'Advanced',
-    description: 'Punishes loose pieces and weak squares',
+    description: 'I punish loose pieces and weak squares',
     rating: 1700,
     strength: StrengthLimit.elo(1700),
     limits: SearchLimits(moveTime: Duration(milliseconds: 700)),
   ),
   LevelSpec(
     name: 'Expert',
-    description: 'Strong positional play and sharp tactics',
+    description: 'Sharp tactics and a positional plan',
     rating: 2000,
     strength: StrengthLimit.elo(2000),
     limits: SearchLimits(moveTime: Duration(milliseconds: 800)),
@@ -75,7 +75,7 @@ const levelSpecs = <LevelSpec>[
   ),
   LevelSpec(
     name: 'Grandmaster',
-    description: 'Full-strength Stockfish. Good luck',
+    description: 'No mercy: my full strength',
     rating: 3200,
     strength: StrengthLimit.full,
     limits: SearchLimits(moveTime: Duration(milliseconds: 1500)),

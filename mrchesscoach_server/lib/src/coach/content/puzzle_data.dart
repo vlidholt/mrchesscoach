@@ -1,3 +1,13 @@
+// Puzzles from the Lichess puzzle database (CC0),
+// https://database.lichess.org/#puzzles
+//
+// Compiled into the server so that every deployment has them, whatever files
+// the build copies next to the executable.
+//
+// ignore_for_file: lines_longer_than_80_chars
+
+/// One puzzle per line: `id,fen,moves,rating,themes,openingTags`.
+const puzzlesCsv = r'''
 # Puzzles from the Lichess puzzle database (CC0), https://database.lichess.org/#puzzles
 # id,fen,moves,rating,themes,openingTags
 00008,r6k/pp2r2p/4Rp1Q/3p4/8/1N1P2R1/PqP2bPP/7K b - - 0 24,f2g3 e6e7 b2b1 b3c1 b1c1 h6c1,1811,crushing hangingPiece long middlegame,
@@ -4894,3 +4904,4 @@ w3Pya,rnbq1rk1/pp3ppp/5b2/3p4/8/2N2N2/PP2PPPP/R2QKB1R w KQ - 2 10,d1d5 f6c3 b2c3
 wjyfl,8/8/8/3K4/5kp1/8/3N4/8 w - - 0 47,d5d4 g4g3 d2c4 g3g2,594,advancedPawn crushing endgame knightEndgame short,
 wwYxe,r1bqr1k1/2p2pp1/p1np1n1p/1p6/3PP3/PBP2N1P/5PP1/R1BQR1K1 b - - 0 14,f6e4 b3d5 e4c3 d5c6 c3d1 e1e8 d8e8 c6e8,2716,advantage fork opening sacrifice veryLong,Ruy_Lopez Ruy_Lopez_Morphy_Defense
 x0Gg8,r3kb1r/ppp1pp1p/2n3p1/3qP3/3P4/5B1P/PP3PP1/R1BQK2R b KQkq - 0 11,d5d4 f3c6 b7c6 d1d4,769,crushing intermezzo middlegame short,Queens_Gambit_Declined Queens_Gambit_Declined_Marshall_Defense
+''';

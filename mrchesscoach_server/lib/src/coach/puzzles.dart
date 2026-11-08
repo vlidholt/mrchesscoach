@@ -1,5 +1,7 @@
-import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
+
+import 'content/puzzle_data.dart';
 
 /// A puzzle from the Lichess puzzle database (CC0).
 class Puzzle {
@@ -223,20 +225,18 @@ const puzzleSetCatalog = [
   ),
 ];
 
-/// The puzzles shipped in `data/puzzles.csv`.
+/// The puzzles compiled into the server (`content/puzzle_data.dart`).
 class PuzzleCatalog {
   PuzzleCatalog._(this.puzzles) : _byId = {for (final p in puzzles) p.id: p};
 
   static PuzzleCatalog? _instance;
 
-  /// Loads the catalog once from `data/puzzles.csv` (relative to the
-  /// server's working directory).
+  /// Parses the catalog once.
   static PuzzleCatalog get instance => _instance ??= _load();
 
   static PuzzleCatalog _load() {
-    final file = File('data/puzzles.csv');
     final puzzles = <Puzzle>[];
-    for (final line in file.readAsLinesSync()) {
+    for (final line in const LineSplitter().convert(puzzlesCsv)) {
       if (line.isEmpty || line.startsWith('#')) continue;
       final f = line.split(',');
       if (f.length < 6) continue;

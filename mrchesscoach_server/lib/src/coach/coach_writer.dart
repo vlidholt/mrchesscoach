@@ -54,7 +54,10 @@ Rules you always follow:
 - Write moves in SAN exactly as they appear in the brief.
 - Be concrete: name the piece, the square and the idea. Prefer one sharp point over several vague ones.
 - Plain sentences only: no headings, no lists unless asked, no emojis.
-- Be encouraging but honest. A blunder is a blunder; say what it allows.''';
+- Be brief. Your words appear in a small speech bubble on a phone, so every word must earn its place. Short sentences, no filler, no repeating what the student can see.
+- Be encouraging but honest. A blunder is a blunder; say what it allows.
+- In games you are also the student's opponent: the opponent's moves are YOUR moves. Talk about them in the first person ("I played...", "my knight"), with a little warmth and humour.
+- The analysis in the brief is your own judgement. Never mention Stockfish, engines, computers, AI or evaluations in numbers.''';
 
 /// The facts about one move that every prompt shares.
 class _MoveBrief {
@@ -71,7 +74,9 @@ class _MoveBrief {
 
   String describe({required bool byStudent}) {
     final a = analysis;
-    final who = byStudent ? 'The student' : 'The opponent (the computer)';
+    final who = byStudent
+        ? 'The student'
+        : 'You, the coach (as the student\'s opponent),';
     final buffer = StringBuffer()
       ..writeln('Position before the move (${sideName(mover)} to move):')
       ..writeln(pieceList(before))
@@ -80,7 +85,7 @@ class _MoveBrief {
       ..writeln()
       ..writeln(
         '$who, playing ${sideName(mover)}, played ${a.san}. '
-        'Engine verdict: ${classPhrase(a.classification)}.',
+        'Verdict: ${classPhrase(a.classification)}.',
       )
       ..writeln(
         '${sideName(mover)}\'s winning chances: ${a.winBefore.round()}% with '
@@ -88,12 +93,12 @@ class _MoveBrief {
       );
     if (a.bestSan != null && a.bestSan != a.san) {
       buffer.writeln(
-        'The engine\'s best move was ${a.bestSan}. Best line: '
+        'The best move was ${a.bestSan}. Best line: '
         '${numberedLine(before, a.bestLine)}.',
       );
     } else if (a.bestLine.isNotEmpty) {
       buffer.writeln(
-        '${a.san} is the engine\'s top choice. Main line: '
+        '${a.san} is the best move. Main line: '
         '${numberedLine(before, a.bestLine)}.',
       );
     }
@@ -129,15 +134,15 @@ const _explainSchema = {
   'properties': {
     'headline': {
       'type': 'string',
-      'description': 'At most 7 words, e.g. "Hangs the bishop on c4".',
+      'description': 'At most 6 words, e.g. "Hangs the bishop on c4".',
     },
     'explanation': {
       'type': 'string',
-      'description': '2-3 sentences, at most 60 words.',
+      'description': '1-2 short sentences, at most 30 words.',
     },
     'lesson': {
       'type': 'string',
-      'description': 'One general takeaway, at most 18 words.',
+      'description': 'One general takeaway, at most 12 words.',
     },
     'motif': {
       'type': 'string',
@@ -206,7 +211,7 @@ class CoachWriter {
         ? (good
               ? 'Explain why ${analysis.san} is ${classPhrase(analysis.classification)}: what it achieves and what idea it follows.'
               : 'Explain why ${analysis.san} is ${classPhrase(analysis.classification)}: what concretely goes wrong (use the continuation), and what the better move ${analysis.bestSan ?? ''} would have achieved.')
-        : 'Explain the opponent\'s move ${analysis.san} (${classPhrase(analysis.classification)}) to the student: what it does, and if it is a mistake, how the student can punish it (use the continuation).';
+        : 'Explain your own move ${analysis.san} (${classPhrase(analysis.classification)}) to the student, in the first person: what you are up to, and if it was a slip, hint how the student can punish it (use the continuation).';
     final json = await _json(
       system: _systemPrompt,
       prompt: '${brief.describe(byStudent: analysis.byPlayer)}\nTask: $task',
@@ -214,9 +219,9 @@ class CoachWriter {
     );
     if (json != null) {
       return analysis.copyWith(
-        headline: _clip(json['headline'] as String?, 80),
-        explanation: _clip(json['explanation'] as String?, 600),
-        lesson: _clip(json['lesson'] as String?, 200),
+        headline: _clip(json['headline'] as String?, 60),
+        explanation: _clip(json['explanation'] as String?, 300),
+        lesson: _clip(json['lesson'] as String?, 120),
         motif: coachMotifs.containsKey(json['motif']) ? json['motif'] : 'other',
       );
     }
@@ -259,10 +264,11 @@ class CoachWriter {
     }
     final task = switch (level) {
       1 =>
-        'Give a hint of one or two sentences that points the student towards the idea behind the best move WITHOUT naming the move, the moving piece or its destination square. Mention the target, weakness or theme instead.',
+        'Give a hint of one short sentence (at most 20 words) that points the student towards the idea behind the best move WITHOUT naming the move, the moving piece or its destination square. Mention the target, weakness or theme instead.',
       2 =>
-        'In one or two sentences, tell the student that $piece is the piece to move and hint at what it should aim for, without giving the destination square.',
-      _ => 'In one or two sentences, explain why $san is the best move here.',
+        'In one short sentence (at most 20 words), tell the student that $piece is the piece to move and hint at what it should aim for, without giving the destination square.',
+      _ =>
+        'In one short sentence (at most 22 words), explain why $san is the best move here.',
     };
     final json = await _json(
       system: _systemPrompt,
@@ -275,7 +281,7 @@ class CoachWriter {
         'required': ['text'],
       },
     );
-    var text = _clip(json?['text'] as String?, 400);
+    var text = _clip(json?['text'] as String?, 220);
     if (text != null && level == 1 && text.contains(san.replaceAll('+', ''))) {
       text = null; // Gave the move away; use the template instead.
     }
@@ -283,7 +289,7 @@ class CoachWriter {
       1 => _fallbackIdea(position, san, targets),
       2 => 'Look at $piece. That is the piece to move.',
       _ =>
-        'Play $san. It is the engine\'s top choice: ${numberedLine(position, bestLine)}.',
+        'Play $san. It is the strongest move: ${numberedLine(position, bestLine)}.',
     };
     return CoachHint(
       level: level,
@@ -321,16 +327,16 @@ class CoachWriter {
       );
     if (defenceSan != null) {
       brief.writeln(
-        'The engine\'s recommended move for the student now: $defenceSan.',
+        'The best reply for the student now: $defenceSan.',
       );
     }
     final text = await _text(
       system: _systemPrompt,
       prompt:
-          '$brief\nTask: In two sentences, explain what ${sideName(opponent)} is threatening with $threatSan and what the student should keep in mind to deal with it. Do not reveal the recommended move.',
+          '$brief\nTask: You play ${sideName(opponent)}. In at most two short sentences (at most 30 words), tell the student in the first person what you are threatening with $threatSan and what they should keep in mind to deal with it. Do not reveal the recommended move.',
     );
     return text ??
-        '${sideName(opponent)} is threatening $threatSan. '
+        'I\'m threatening $threatSan. '
             '${materialStory(nullMovePosition, uciLineFromSan(nullMovePosition, threatLine), opponent)}';
   }
 
@@ -361,7 +367,7 @@ class CoachWriter {
           ? 'mate in ${l.mate!.abs()} for ${l.mate! > 0 ? 'White' : 'Black'}'
           : '${((l.cp ?? 0) / 100).toStringAsFixed(1)} pawns (White\'s view)';
       brief.writeln(
-        'Engine line ${i + 1}: ${numberedLine(position, l.line)} — $eval.',
+        'Candidate line ${i + 1}: ${numberedLine(position, l.line)} — $eval.',
       );
     }
     final looseWhite = loosePieces(position, Side.white);
@@ -374,13 +380,13 @@ class CoachWriter {
     }
     final text = await _text(
       system:
-          '$_systemPrompt\n- Answer the student\'s question about the position in at most 120 words. If the question is not about chess, steer back to the game kindly.\n\nBrief:\n$brief',
+          '$_systemPrompt\n- Answer the student\'s question about the position in at most 70 words. If the question is not about chess, steer back to the game kindly.\n\nBrief:\n$brief',
       prompt: question,
       history: history,
     );
     return text ??
-        'I can\'t reach my analysis notes right now. The engine likes '
-            '${lines.firstOrNull?.san ?? 'the position'} here. Try asking again in a moment.';
+        'I can\'t reach my notes right now, but I like '
+            '${lines.firstOrNull?.san ?? 'this position'} here. Ask me again in a moment.';
   }
 
   /// A short written review of a finished game.
@@ -404,7 +410,7 @@ class CoachWriter {
         '''
 The student played ${sideName(studentSide)}. Result: $result.
 Opening: ${openingName ?? 'unknown'}.
-Accuracy: student ${playerAccuracy.round()}%, computer ${opponentAccuracy.round()}%.
+Accuracy: student ${playerAccuracy.round()}%, you (the coach, as the opponent) ${opponentAccuracy.round()}%.
 Moves (key moments tagged with the engine verdict and best move):
 ${lines.join(' ')}''';
     final json = await _json(
@@ -459,7 +465,7 @@ ${lines.join(' ')}''';
     final text = await _text(
       system: _systemPrompt,
       prompt:
-          '$brief\nTask: In at most three sentences, explain why $wrongSan does not work and what idea the solution $solutionSan uses.',
+          '$brief\nTask: In at most two short sentences (at most 35 words), explain why $wrongSan does not work and what idea the solution $solutionSan uses.',
     );
     return text ??
         '$wrongSan doesn\'t work here. The key move is $solutionSan: '
@@ -469,17 +475,23 @@ ${lines.join(' ')}''';
   // ---------------------------------------------------------------------------
   // Templates
 
+  /// Trims [s] to at most [max] characters, preferably at the end of a
+  /// sentence so that a long answer still reads as finished.
   static String? _clip(String? s, int max) {
     if (s == null) return null;
     final t = s.trim();
     if (t.isEmpty) return null;
-    return t.length <= max ? t : '${t.substring(0, max - 1)}…';
+    if (t.length <= max) return t;
+    final head = t.substring(0, max);
+    final end = head.lastIndexOf(RegExp(r'[.!?](\s|$)'));
+    if (end >= max ~/ 2) return head.substring(0, end + 1);
+    return '${t.substring(0, max - 1).trimRight()}…';
   }
 
   static String _fallbackHeadline(MoveAnalysis a) => switch (a.classification) {
     MoveClass.brilliant => 'A brilliant sacrifice!',
     MoveClass.great => 'The only good move',
-    MoveClass.best => 'The engine\'s top choice',
+    MoveClass.best => 'The very best move',
     MoveClass.excellent => 'Excellent, nearly perfect',
     MoveClass.good => 'A solid move',
     MoveClass.book => 'A known opening move',
@@ -495,12 +507,12 @@ ${lines.join(' ')}''';
       '${a.san} is ${classPhrase(a.classification)}.',
     ];
     if (a.bestSan != null && a.bestSan != a.san) {
-      parts.add('The engine preferred ${a.bestSan}.');
+      parts.add('${a.bestSan} was stronger.');
     }
     if (a.replyLine.isNotEmpty && keyClasses.contains(a.classification)) {
       parts.add(
         'After ${a.san}, the critical line is '
-        '${numberedLine(brief.after, a.replyLine.take(4).toList())}.',
+        '${numberedLine(brief.after, a.replyLine.take(3).toList())}.',
       );
       parts.add(
         materialStory(

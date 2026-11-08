@@ -45,7 +45,6 @@ COPY --from=build /app/mrchesscoach_server/build/bundle/ ./
 COPY --from=build /app/mrchesscoach_server/config/ config/
 COPY --from=build /app/mrchesscoach_server/web/ web/
 COPY --from=build /app/mrchesscoach_server/migrations/ migrations/
-COPY --from=build /app/mrchesscoach_server/data/ data/
 
 # This file is required to enable the endpoint log filter in Insights.
 COPY --from=build /app/mrchesscoach_server/lib/src/generated/protocol.yaml lib/src/generated/protocol.yaml

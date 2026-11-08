@@ -178,7 +178,7 @@ class _AskCoachDialogState extends State<_AskCoachDialog> {
                     if (_waiting)
                       const Padding(
                         padding: EdgeInsets.only(top: 4, bottom: 8),
-                        child: CoachThinking(label: 'Coach is looking'),
+                        child: CoachThinking(label: 'Let me look'),
                       ),
                   ],
                 ),

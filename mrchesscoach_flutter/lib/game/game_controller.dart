@@ -6,9 +6,9 @@ import 'package:mrchesscoach_client/mrchesscoach_client.dart';
 import '../client.dart';
 import 'chess_model.dart';
 
-/// Holds one game against the computer and talks to the server.
+/// Holds one game against the coach and talks to the server.
 ///
-/// The player's move is shown at once; the computer's reply arrives with the
+/// The player's move is shown at once; the coach's reply arrives with the
 /// server response. The server stays the authority: whatever it returns
 /// replaces the local state. With the coach on, the server may pause the
 /// game after a mistake (`awaitingDecision`) until the player retries or
@@ -20,7 +20,7 @@ class GameController extends ChangeNotifier {
     unawaited(_loadVerdicts());
   }
 
-  /// The level the computer plays at, if known.
+  /// The level the coach plays at, if known.
   final ChessLevel? level;
 
   /// Plies of an opening course played before the game started. They can't
@@ -39,7 +39,7 @@ class GameController extends ChangeNotifier {
   Move? _lastMove;
   Move? get lastMove => _lastMove;
 
-  /// The computer is choosing its move.
+  /// The coach is choosing its move.
   bool get thinking => _thinking;
   bool _thinking = false;
 
@@ -60,7 +60,7 @@ class GameController extends ChangeNotifier {
   MoveAnalysis? get playerFeedback => _playerFeedback;
   MoveAnalysis? _playerFeedback;
 
-  /// The verdict on the computer's latest move.
+  /// The verdict on the coach's latest move.
   MoveAnalysis? get opponentFeedback => _opponentFeedback;
   MoveAnalysis? _opponentFeedback;
 
@@ -125,7 +125,7 @@ class GameController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
   // Actions
 
-  /// Plays the player's [move] and waits for the coach and the computer.
+  /// Plays the player's [move] and waits for the coach's verdict and reply.
   Future<void> play(Move move) async {
     final san = _game.legalMoves?[move.uci];
     if (!canMove || san == null) return;
@@ -149,7 +149,7 @@ class GameController extends ChangeNotifier {
     });
   }
 
-  /// Takes back the move the coach paused on. With [showBest], the engine's
+  /// Takes back the move the coach paused on. With [showBest], the best
   /// move is drawn as an arrow afterwards.
   Future<void> retry({bool showBest = false}) async {
     if (!awaitingDecision || _pending != null) return;
@@ -163,7 +163,7 @@ class GameController extends ChangeNotifier {
     }
   }
 
-  /// Keeps the paused move and lets the computer reply.
+  /// Keeps the paused move and lets the coach reply.
   Future<void> playOn() async {
     if (!awaitingDecision || _pending != null) return;
     _pending = PendingAction.playOn;

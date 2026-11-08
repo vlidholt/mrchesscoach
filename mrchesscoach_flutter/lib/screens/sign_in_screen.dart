@@ -1,10 +1,10 @@
-import '../game/chess_model.dart';
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import '../client.dart';
 import '../theme.dart';
-import '../widgets/chess_board.dart';
+import '../widgets/fx.dart';
+import 'lobby_screen.dart' show CoachHero;
 
 /// Shows [child] when the user is signed in, and the sign-in page otherwise.
 class SignInScreen extends StatefulWidget {
@@ -40,7 +40,15 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 700),
+      switchInCurve: Curves.easeOutCubic,
+      transitionBuilder: (child, a) => FadeTransition(
+        opacity: a,
+        child: ScaleTransition(
+          scale: Tween(begin: 1.06, end: 1.0).animate(a),
+          child: child,
+        ),
+      ),
       child: _isSignedIn
           ? KeyedSubtree(key: const ValueKey('in'), child: widget.child)
           : KeyedSubtree(key: const ValueKey('out'), child: _signInPage()),
@@ -48,8 +56,10 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Widget _signInPage() {
+    // Email sign-in with a one-time code; the widget picks the flow from the
+    // server's email endpoint.
     final signIn = Panel(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
       child: SignInWidget(
         client: client,
         onAuthenticated: () {},
@@ -61,84 +71,105 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
 
+    final title = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Shine(
+          period: const Duration(milliseconds: 4600),
+          child: GoldText(
+            'Mr. Chess Coach',
+            style: Typo.display(44),
+            align: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Your friendly opponent and coach in one.',
+          textAlign: TextAlign.center,
+          style: Typo.body(14),
+        ),
+      ],
+    );
+
     return Scaffold(
-      body: AmbientBackground(
-        spotlight: const Alignment(0, -0.7),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final wide = constraints.maxWidth >= 900;
-              final intro = Column(
-                crossAxisAlignment: wide
-                    ? CrossAxisAlignment.start
-                    : CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+      body: FxScope(
+        child: AmbientBackground(
+          spotlight: const Alignment(0, -0.7),
+          intensity: 0.6,
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final wide = constraints.maxWidth >= Breakpoints.desktop;
+                if (wide) {
+                  return Row(
                     children: [
-                      Image.asset(
-                        pieceAsset(Side.white, Role.king),
-                        height: wide ? 150 : 90,
+                      const Expanded(
+                        flex: 6,
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CoachHero(big: true),
+                        ),
                       ),
-                      Transform.translate(
-                        offset: const Offset(-18, 0),
-                        child: Image.asset(
-                          pieceAsset(Side.black, Role.queen),
-                          height: wide ? 130 : 78,
+                      Expanded(
+                        flex: 5,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(32),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 420),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Entrance(child: title),
+                                  const SizedBox(height: 28),
+                                  Entrance(
+                                    delay: const Duration(milliseconds: 200),
+                                    child: signIn,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 18),
-                  Text('Mr. Chess', style: Typo.display(wide ? 88 : 56)),
-                  Text(
-                    'Coach',
-                    style: Typo.display(wide ? 88 : 56, color: Palette.gold),
-                  ),
-                  const SizedBox(height: 16),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 380),
-                    child: Text(
-                      'Sit down at the board with Stockfish, at a level that suits you. Your games are kept for you.',
-                      textAlign: wide ? TextAlign.start : TextAlign.center,
-                      style: Typo.body(15),
-                    ),
-                  ),
-                ],
-              );
-              final form = ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: signIn,
-              );
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 32,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - 64,
-                  ),
-                  child: Center(
-                    child: wide
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              intro,
-                              const SizedBox(width: 80),
-                              form,
-                            ],
-                          )
-                        : Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [intro, const SizedBox(height: 32), form],
+                  );
+                }
+                // Phones and tablets: the coach on top, the form below. It
+                // only scrolls when the keyboard takes the space.
+                return CustomScrollView(
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                            child: Column(
+                              children: [
+                                const Expanded(
+                                  child: SizedBox(
+                                    height: 170,
+                                    child: CoachHero(),
+                                  ),
+                                ),
+                                Entrance(child: title),
+                                const SizedBox(height: 14),
+                                Entrance(
+                                  delay: const Duration(milliseconds: 200),
+                                  child: signIn,
+                                ),
+                              ],
+                            ),
                           ),
-                  ),
-                ),
-              );
-            },
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

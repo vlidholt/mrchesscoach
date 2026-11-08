@@ -1,4 +1,8 @@
 emailIdp:
+  - startOtpLogin:
+  - verifyOtpLoginCode:
+  - finishOtpLogin:
+  - finishOtpRegistration:
   - login:
   - startRegistration:
   - verifyRegistrationCode:

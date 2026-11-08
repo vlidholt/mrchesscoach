@@ -1,7 +1,11 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/scheduler.dart';
+
+import 'widgets/fx.dart';
 
 /// The palette: onyx lacquer, ivory and brushed gold, taken from the board.
 abstract final class Palette {
@@ -18,12 +22,28 @@ abstract final class Palette {
   static const win = Color(0xFF8FBF7A);
   static const loss = Color(0xFFD9745F);
   static const draw = Color(0xFFB9AE98);
+
+  /// Speech bubbles: ivory paper with dark ink.
+  static const paper = Color(0xFFFBF4E4);
+  static const paperShade = Color(0xFFEFE2C6);
+  static const ink = Color(0xFF2A2219);
+  static const inkMuted = Color(0xFF7A6C58);
 }
 
 /// Text styles. Cormorant for display, Manrope for UI, Plex Mono for moves.
+///
+/// The fonts are bundled (see `fonts:` in pubspec.yaml) as static weights
+/// subset to Latin: Manrope 400–800, Cormorant Garamond 700 and 600 italic,
+/// Plex Mono 500 and 700. A weight that is not bundled renders with the
+/// nearest one, so add the file before using a new weight.
 abstract final class Typo {
+  static const serif = 'Cormorant Garamond';
+  static const sans = 'Manrope';
+  static const monospace = 'IBM Plex Mono';
+
   static TextStyle display(double size, {Color color = Palette.ivory}) =>
-      GoogleFonts.cormorantGaramond(
+      TextStyle(
+        fontFamily: serif,
         fontSize: size,
         fontWeight: FontWeight.w600,
         fontStyle: FontStyle.italic,
@@ -33,7 +53,8 @@ abstract final class Typo {
       );
 
   static TextStyle title(double size, {Color color = Palette.ivory}) =>
-      GoogleFonts.cormorantGaramond(
+      TextStyle(
+        fontFamily: serif,
         fontSize: size,
         fontWeight: FontWeight.w700,
         height: 1.05,
@@ -44,7 +65,8 @@ abstract final class Typo {
     double size, {
     Color color = Palette.parchment,
     FontWeight weight = FontWeight.w500,
-  }) => GoogleFonts.manrope(
+  }) => TextStyle(
+    fontFamily: sans,
     fontSize: size,
     fontWeight: weight,
     color: color,
@@ -53,7 +75,8 @@ abstract final class Typo {
 
   /// Small capitals used for labels: "NEW GAME", "LEVEL".
   static TextStyle label({Color color = Palette.gold, double size = 11}) =>
-      GoogleFonts.manrope(
+      TextStyle(
+        fontFamily: sans,
         fontSize: size,
         fontWeight: FontWeight.w800,
         letterSpacing: 2.6,
@@ -61,7 +84,8 @@ abstract final class Typo {
       );
 
   static TextStyle mono(double size, {Color color = Palette.parchment}) =>
-      GoogleFonts.ibmPlexMono(
+      TextStyle(
+        fontFamily: monospace,
         fontSize: size,
         fontWeight: FontWeight.w500,
         color: color,
@@ -71,6 +95,7 @@ abstract final class Typo {
 ThemeData buildTheme() {
   final base = ThemeData(
     brightness: Brightness.dark,
+    fontFamily: Typo.sans,
     useMaterial3: true,
     colorScheme: const ColorScheme.dark(
       primary: Palette.gold,
@@ -83,9 +108,12 @@ ThemeData buildTheme() {
     scaffoldBackgroundColor: Palette.onyx,
   );
   return base.copyWith(
-    textTheme: GoogleFonts.manropeTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: Palette.ivory, displayColor: Palette.ivory),
+    textTheme: base.textTheme.apply(
+      fontFamily: Typo.sans,
+      bodyColor: Palette.ivory,
+      displayColor: Palette.ivory,
+    ),
+    primaryTextTheme: base.primaryTextTheme.apply(fontFamily: Typo.sans),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: Palette.smoke,
       contentTextStyle: Typo.body(14, color: Palette.ivory),
@@ -106,13 +134,25 @@ ThemeData buildTheme() {
   );
 }
 
+/// Layout breakpoints shared by every screen.
+abstract final class Breakpoints {
+  /// Below this width the phone layouts are used.
+  static const tablet = 700.0;
+
+  /// From this width the board and the side panel sit side by side.
+  static const desktop = 1000.0;
+}
+
 /// The room the game is played in: a dark lacquered surface lit by a single
-/// warm lamp, with a faint diagonal inlay and film grain.
-class AmbientBackground extends StatelessWidget {
+/// warm lamp, with slow light shafts (a fragment shader) and rising embers.
+class AmbientBackground extends StatefulWidget {
   const AmbientBackground({
     super.key,
     required this.child,
     this.spotlight = const Alignment(0, -0.35),
+    this.tint = Palette.gold,
+    this.intensity = 0.3,
+    this.embers = true,
   });
 
   final Widget child;
@@ -120,35 +160,151 @@ class AmbientBackground extends StatelessWidget {
   /// Where the lamp hangs.
   final Alignment spotlight;
 
+  /// The colour of the light; it eases to a new tint, e.g. red after a
+  /// blunder.
+  final Color tint;
+
+  /// 0..1, how strongly the light shafts glow.
+  final double intensity;
+
+  final bool embers;
+
+  @override
+  State<AmbientBackground> createState() => _AmbientBackgroundState();
+}
+
+class _AmbientBackgroundState extends State<AmbientBackground>
+    with SingleTickerProviderStateMixin {
+  static Future<ui.FragmentProgram?>? _program;
+
+  static Future<ui.FragmentProgram?> _load() async {
+    try {
+      return await ui.FragmentProgram.fromAsset('shaders/ambient.frag');
+    } catch (e) {
+      debugPrint('Ambient shader unavailable: $e');
+      return null;
+    }
+  }
+
+  ui.FragmentShader? _shader;
+  late final Ticker _ticker = createTicker((elapsed) {
+    _time.value = elapsed.inMicroseconds / 1e6;
+  });
+  final _time = ValueNotifier<double>(0);
+
+  @override
+  void initState() {
+    super.initState();
+    (_program ??= _load()).then((program) {
+      if (!mounted || program == null) return;
+      setState(() => _shader = program.fragmentShader());
+      _ticker.start();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _time.dispose();
+    _shader?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final still = MediaQuery.of(context).disableAnimations;
+    _ticker.muted = still;
+    final light = Offset(
+      (widget.spotlight.x + 1) / 2,
+      (widget.spotlight.y + 1) / 2,
+    );
     return Stack(
       fit: StackFit.expand,
       children: [
         const ColoredBox(color: Palette.onyx),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 900),
-          curve: Curves.easeInOutCubic,
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: spotlight,
-              radius: 1.15,
-              colors: const [
-                Color(0xFF2B251B),
-                Color(0xFF16130F),
-                Palette.onyx,
-              ],
-              stops: const [0, 0.45, 1],
+        if (_shader case final shader?)
+          TweenAnimationBuilder<Color?>(
+            tween: ColorTween(end: widget.tint),
+            duration: const Duration(milliseconds: 900),
+            builder: (context, tint, _) => TweenAnimationBuilder<double>(
+              tween: Tween(end: widget.intensity),
+              duration: const Duration(milliseconds: 900),
+              builder: (context, intensity, _) => RepaintBoundary(
+                child: CustomPaint(
+                  painter: _AmbientShaderPainter(
+                    shader,
+                    _time,
+                    light,
+                    tint ?? Palette.gold,
+                    intensity,
+                  ),
+                ),
+              ),
+            ),
+          )
+        else ...[
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeInOutCubic,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: widget.spotlight,
+                radius: 1.15,
+                colors: const [
+                  Color(0xFF2B251B),
+                  Color(0xFF16130F),
+                  Palette.onyx,
+                ],
+                stops: const [0, 0.45, 1],
+              ),
             ),
           ),
-        ),
-        const RepaintBoundary(child: CustomPaint(painter: _InlayPainter())),
-        child,
+          const RepaintBoundary(child: CustomPaint(painter: _InlayPainter())),
+        ],
+        if (widget.embers && !still)
+          IgnorePointer(child: EmberField(color: widget.tint)),
+        widget.child,
       ],
     );
   }
 }
 
+class _AmbientShaderPainter extends CustomPainter {
+  _AmbientShaderPainter(
+    this.shader,
+    this.time,
+    this.light,
+    this.tint,
+    this.intensity,
+  ) : super(repaint: time);
+
+  final ui.FragmentShader shader;
+  final ValueListenable<double> time;
+  final Offset light;
+  final Color tint;
+  final double intensity;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    shader
+      ..setFloat(0, size.width)
+      ..setFloat(1, size.height)
+      ..setFloat(2, time.value)
+      ..setFloat(3, light.dx)
+      ..setFloat(4, light.dy)
+      ..setFloat(5, intensity)
+      ..setFloat(6, tint.r)
+      ..setFloat(7, tint.g)
+      ..setFloat(8, tint.b);
+    canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+  }
+
+  @override
+  bool shouldRepaint(_AmbientShaderPainter old) =>
+      old.light != light || old.tint != tint || old.intensity != intensity;
+}
+
+/// Diagonal pinstripes and film grain, used when shaders are unavailable.
 class _InlayPainter extends CustomPainter {
   const _InlayPainter();
 

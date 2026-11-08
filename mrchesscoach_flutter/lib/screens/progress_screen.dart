@@ -15,10 +15,17 @@ import '../widgets/move_badge.dart';
 /// accuracy curves, strengths and weaknesses, move quality and the training
 /// log. Loads its data itself and refreshes on pull or on the refresh button.
 class ProgressView extends StatefulWidget {
-  const ProgressView({super.key, required this.onRecommendation});
+  const ProgressView({
+    super.key,
+    required this.onRecommendation,
+    this.recentGames,
+  });
 
   /// Called when the user taps a recommendation card.
   final void Function(CoachRecommendation recommendation) onRecommendation;
+
+  /// The latest finished games, shown under the headline numbers.
+  final Widget? recentGames;
 
   @override
   State<ProgressView> createState() => _ProgressViewState();
@@ -84,7 +91,7 @@ class _ProgressViewState extends State<ProgressView> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CoachThinking(label: 'Coach is reviewing your progress'),
+        child: CoachThinking(label: 'Looking through your games'),
       );
     }
     final progress = _progress;
@@ -167,6 +174,10 @@ class _ProgressViewState extends State<ProgressView> {
         gap,
         _Entrance(index: 2, child: _StatTiles(progress: p)),
         gap,
+        if (widget.recentGames case final games?) ...[
+          _Entrance(index: 3, child: games),
+          gap,
+        ],
         if (wide)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
