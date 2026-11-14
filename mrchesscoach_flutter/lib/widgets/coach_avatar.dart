@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../theme.dart';
 import 'fx.dart';
@@ -258,7 +259,7 @@ class _Reaction extends StatelessWidget {
           ],
         ),
         child: glyph.isEmpty
-            ? Icon(Icons.auto_awesome, size: s * 0.6, color: color)
+            ? Icon(FluentIcons.sparkle_24_filled, size: s * 0.6, color: color)
             : Text(
                 glyph,
                 style: Typo.body(

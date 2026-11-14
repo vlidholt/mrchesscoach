@@ -3,6 +3,7 @@ import 'dart:math';
 import '../game/chess_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../game/game_controller.dart';
 import '../theme.dart';
@@ -818,7 +819,7 @@ class _MoveStripState extends State<MoveStrip> {
       child: Row(
         children: [
           StepButton(
-            icon: Icons.chevron_left_rounded,
+            icon: FluentIcons.chevron_left_24_regular,
             tooltip: 'Previous move',
             onTap: canBack ? () => _step(-1) : null,
           ),
@@ -885,7 +886,7 @@ class _MoveStripState extends State<MoveStrip> {
                   ),
           ),
           StepButton(
-            icon: Icons.chevron_right_rounded,
+            icon: FluentIcons.chevron_right_24_regular,
             tooltip: 'Next move',
             onTap: canForward ? () => _step(1) : null,
           ),

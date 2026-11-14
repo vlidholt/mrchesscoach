@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -457,7 +458,7 @@ class _MistakesBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Icon(Icons.arrow_forward_rounded, color: Palette.gold),
+          const Icon(FluentIcons.arrow_right_24_regular, color: Palette.gold),
         ],
       ),
     );
@@ -505,7 +506,7 @@ class _OpeningCard extends StatelessWidget {
                     const Spacer(),
                     if (o.completed)
                       const Icon(
-                        Icons.verified_rounded,
+                        FluentIcons.checkmark_starburst_24_filled,
                         size: 18,
                         color: Palette.win,
                       ),
@@ -587,7 +588,7 @@ class _RatedCard extends StatelessWidget {
               border: Border.all(color: Palette.gold),
             ),
             child: const Icon(
-              Icons.extension_rounded,
+              FluentIcons.puzzle_piece_24_regular,
               color: Palette.gold,
               size: 30,
             ),
@@ -707,7 +708,7 @@ class _LessonCard extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(right: 3),
                         child: Icon(
-                          Icons.circle,
+                          FluentIcons.circle_24_filled,
                           size: 7,
                           color: i < l.difficulty
                               ? Palette.gold
@@ -717,7 +718,7 @@ class _LessonCard extends StatelessWidget {
                     const Spacer(),
                     if (l.completed)
                       const Icon(
-                        Icons.verified_rounded,
+                        FluentIcons.checkmark_starburst_24_filled,
                         size: 18,
                         color: Palette.win,
                       ),
@@ -810,7 +811,7 @@ class _LessonDialog extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.only(top: 3),
                           child: Icon(
-                            Icons.check_circle_outline_rounded,
+                            FluentIcons.checkmark_circle_24_regular,
                             size: 15,
                             color: Palette.gold,
                           ),
@@ -832,7 +833,10 @@ class _LessonDialog extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.flag_rounded, color: Palette.gold),
+                      const Icon(
+                        FluentIcons.flag_24_filled,
+                        color: Palette.gold,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(

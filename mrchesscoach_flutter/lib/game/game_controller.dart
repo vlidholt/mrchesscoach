@@ -64,8 +64,13 @@ class GameController extends ChangeNotifier {
   MoveAnalysis? get opponentFeedback => _opponentFeedback;
   MoveAnalysis? _opponentFeedback;
 
-  /// Plies whose explanation is being fetched.
-  final explaining = <int>{};
+  /// Analyses (by id) whose explanation is being fetched. Keyed by id, not
+  /// ply: after a retry or undo the same ply holds a different move.
+  final _explaining = <int>{};
+
+  bool get isExplainingAny => _explaining.isNotEmpty;
+
+  bool isExplaining(MoveAnalysis analysis) => _explaining.contains(analysis.id);
 
   /// The current step of the hint ladder, if a hint is shown.
   CoachHint? get hint => _hint;
@@ -235,23 +240,28 @@ class GameController extends ChangeNotifier {
   /// server and here).
   Future<MoveAnalysis?> explain(int ply) async {
     final known = verdicts[ply];
-    if (known?.explanation != null) return known;
-    if (explaining.contains(ply)) return null;
-    explaining.add(ply);
+    if (known == null || known.id == null) return null;
+    if (known.explanation != null) return known;
+    final id = known.id!;
+    if (_explaining.contains(id)) return null;
+    _explaining.add(id);
     notifyListeners();
     try {
       final explained = await client.coach.explainMove(_game.id!, ply);
-      if (ply < _game.moves.length || explained.retracted) {
-        verdicts[ply] = explained;
-      }
-      if (_playerFeedback?.id == explained.id) _playerFeedback = explained;
-      if (_opponentFeedback?.id == explained.id) _opponentFeedback = explained;
+      // The answer can arrive after a retry or undo, when this ply holds a
+      // different move (or none): only update the analysis it was asked for.
+      if (explained.id != id) return null;
+      if (verdicts[ply]?.id == id) verdicts[ply] = explained;
+      if (_playerFeedback?.id == id) _playerFeedback = explained;
+      if (_opponentFeedback?.id == id) _opponentFeedback = explained;
       return explained;
     } catch (_) {
-      onMessage?.call('The coach could not explain that move right now.');
+      if (verdicts[ply]?.id == id) {
+        onMessage?.call('The coach could not explain that move right now.');
+      }
       return null;
     } finally {
-      explaining.remove(ply);
+      _explaining.remove(id);
       notifyListeners();
     }
   }
@@ -268,8 +278,10 @@ class GameController extends ChangeNotifier {
     if (_game.id == null) return;
     try {
       final list = await client.coach.moveVerdicts(_game.id!);
+      // Moves may have been played or taken back while this loaded: keep
+      // the fresher verdicts and skip plies that no longer exist.
       for (final v in list) {
-        verdicts[v.ply] = v;
+        if (v.ply < _game.moves.length) verdicts.putIfAbsent(v.ply, () => v);
       }
       final last = _game.moves.length - 1;
       for (final ply in [last, last - 1]) {

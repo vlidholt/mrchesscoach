@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../theme.dart';
 
@@ -43,12 +44,12 @@ extension MoveClassStyle on MoveClass {
   };
 
   IconData get icon => switch (this) {
-    MoveClass.best => Icons.star_rounded,
-    MoveClass.excellent => Icons.thumb_up_rounded,
-    MoveClass.good => Icons.check_rounded,
-    MoveClass.book => Icons.menu_book_rounded,
-    MoveClass.miss => Icons.close_rounded,
-    _ => Icons.circle,
+    MoveClass.best => FluentIcons.star_24_filled,
+    MoveClass.excellent => FluentIcons.thumb_like_24_filled,
+    MoveClass.good => FluentIcons.checkmark_24_filled,
+    MoveClass.book => FluentIcons.book_24_filled,
+    MoveClass.miss => FluentIcons.dismiss_24_filled,
+    _ => FluentIcons.circle_24_filled,
   };
 
   /// Verdicts that call for the coach's attention.

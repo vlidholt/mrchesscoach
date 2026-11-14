@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../game/game_controller.dart';
 import '../theme.dart';
@@ -83,7 +84,7 @@ class GameCoachChat extends StatelessWidget {
           c.awaitingDecision ||
           c.hint != null ||
           c.threat != null ||
-          c.explaining.isNotEmpty,
+          c.isExplainingAny,
     );
   }
 
@@ -111,6 +112,22 @@ class GameCoachChat extends StatelessWidget {
           ),
         ),
       );
+    } else if (feedback == null &&
+        !c.isOver &&
+        lessonTips.isEmpty &&
+        c.verdicts.values.any((v) => v.byPlayer)) {
+      // After a retry or a takeback: not the greeting again.
+      if (c.bestMoveArrow == null) {
+        lines.add(
+          CoachLine(
+            id: 'again-${c.sanMoves.length}',
+            child: TypewriterText(
+              'Your move again. Take a fresh look at the position.',
+              style: BubbleText.body,
+            ),
+          ),
+        );
+      }
     } else if (feedback == null && !c.isOver) {
       lines.add(
         CoachLine(
@@ -263,7 +280,7 @@ class _Verdict extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = analysis;
-    final loading = controller.explaining.contains(a.ply);
+    final loading = controller.isExplaining(a);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -340,7 +357,7 @@ class _WhyLink extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.help_outline_rounded,
+              FluentIcons.question_circle_24_regular,
               size: 15,
               color: Palette.goldDeep,
             ),
@@ -380,7 +397,7 @@ class PauseBar extends StatelessWidget {
             flex: 5,
             child: GoldButton(
               label: 'Try again',
-              icon: Icons.replay_rounded,
+              icon: FluentIcons.arrow_counterclockwise_24_regular,
               compact: true,
               busy: c.pending == PendingAction.retry,
               onPressed: busy ? null : () => c.retry(),
@@ -391,7 +408,7 @@ class PauseBar extends StatelessWidget {
             flex: 5,
             child: _OutlinePill(
               label: 'Show best',
-              icon: Icons.visibility_outlined,
+              icon: FluentIcons.eye_24_regular,
               color: BoardArrow.best,
               onTap: busy ? null : () => c.retry(showBest: true),
             ),

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../theme.dart';
 
@@ -166,7 +167,7 @@ class _HistoryRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           const Icon(
-            Icons.insights_rounded,
+            FluentIcons.data_trending_24_regular,
             size: 18,
             color: Palette.goldDeep,
           ),

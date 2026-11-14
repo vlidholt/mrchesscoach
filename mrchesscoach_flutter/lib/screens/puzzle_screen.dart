@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -999,7 +1000,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 child: Shine(
                   child: GoldButton(
                     label: _mistakes ? 'Next position' : 'Next puzzle',
-                    icon: Icons.arrow_forward_rounded,
+                    icon: FluentIcons.arrow_right_24_regular,
                     onPressed: _load,
                   ),
                 ),
@@ -1182,7 +1183,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.check_circle_rounded,
+            FluentIcons.checkmark_circle_24_filled,
             size: 15,
             color: _solvedThisSession > 0 ? Palette.win : Palette.muted,
           ),
@@ -1238,13 +1239,13 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   List<ActionItem> _actions({required bool includeNext}) {
     final ask = ActionItem(
       label: 'Ask',
-      icon: Icons.forum_outlined,
+      icon: FluentIcons.chat_multiple_24_regular,
       tooltip: 'Ask me about this position',
       onTap: _phase == _Phase.loading || _phase == _Phase.intro ? null : _ask,
     );
     final skip = ActionItem(
       label: 'Skip',
-      icon: Icons.skip_next_rounded,
+      icon: FluentIcons.next_24_regular,
       tooltip: _mistakes ? 'Skip this position' : 'Skip this puzzle',
       onTap: _phase == _Phase.loading || _phase == _Phase.checking
           ? null
@@ -1255,7 +1256,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         return [
           ActionItem(
             label: 'Retry',
-            icon: Icons.replay_rounded,
+            icon: FluentIcons.arrow_counterclockwise_24_regular,
             tooltip: 'Try the position again',
             highlight: true,
             onTap: _retry,
@@ -1263,14 +1264,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           if (!_mistakes)
             ActionItem(
               label: 'Why?',
-              icon: Icons.help_outline_rounded,
+              icon: FluentIcons.question_circle_24_regular,
               tooltip: 'Why doesn\'t ${_wrongSan ?? 'it'} work?',
               busy: _explaining,
               onTap: _explanation == null ? _explainMiss : null,
             ),
           ActionItem(
             label: 'Solution',
-            icon: Icons.visibility_outlined,
+            icon: FluentIcons.eye_24_regular,
             tooltip: 'Show me the solution',
             onTap: _solution.isEmpty ? null : _showSolution,
           ),
@@ -1283,7 +1284,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           if (includeNext)
             ActionItem(
               label: 'Next',
-              icon: Icons.arrow_forward_rounded,
+              icon: FluentIcons.arrow_right_24_regular,
               tooltip: _mistakes ? 'Next position' : 'Next puzzle',
               highlight: true,
               onTap: _load,
@@ -1293,7 +1294,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         return [
           ActionItem(
             label: _hintLevel == 0 ? 'Hint' : 'More',
-            icon: Icons.lightbulb_outline_rounded,
+            icon: FluentIcons.lightbulb_24_regular,
             tooltip: 'A nudge in the right direction',
             highlight: _hintLevel > 0,
             onTap: _phase == _Phase.solving && _hintLevel < 2 ? _hint : null,
@@ -1406,8 +1407,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                         GoldButton(
                           label: error != null ? 'Try again' : 'Back',
                           icon: error != null
-                              ? Icons.replay_rounded
-                              : Icons.arrow_back_rounded,
+                              ? FluentIcons.arrow_counterclockwise_24_regular
+                              : FluentIcons.arrow_left_24_regular,
                           compact: true,
                           onPressed: error != null
                               ? _load
@@ -1581,7 +1582,9 @@ class _RatingChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            up ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+            up
+                ? FluentIcons.arrow_trending_24_regular
+                : FluentIcons.arrow_trending_down_24_regular,
             size: big ? 20 : 14,
             color: Colors.white,
           ),
@@ -1833,7 +1836,7 @@ class _StreakFlame extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.local_fire_department_rounded,
+            FluentIcons.fire_24_filled,
             size: compact ? 18 : 24,
             color: hot ? const Color(0xFFF2A23A) : Palette.muted,
           ),

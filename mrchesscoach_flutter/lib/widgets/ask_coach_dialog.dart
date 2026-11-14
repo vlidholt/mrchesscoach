@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../theme.dart';
@@ -148,7 +149,7 @@ class _AskCoachDialogState extends State<_AskCoachDialog> {
                       tooltip: 'Close',
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(
-                        Icons.close_rounded,
+                        FluentIcons.dismiss_24_regular,
                         color: Palette.muted,
                       ),
                     ),
@@ -206,58 +207,78 @@ class _AskCoachDialogState extends State<_AskCoachDialog> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 12, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _input,
-                        autofocus: true,
-                        enabled: !_waiting,
-                        minLines: 1,
-                        maxLines: 3,
-                        textInputAction: TextInputAction.send,
-                        onSubmitted: _send,
-                        style: Typo.body(14, color: Palette.ivory),
-                        decoration: InputDecoration(
-                          hintText: 'Type your question…',
-                          hintStyle: Typo.body(14, color: Palette.muted),
-                          filled: true,
-                          fillColor: Colors.white.withValues(alpha: 0.04),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                child: TextField(
+                  controller: _input,
+                  autofocus: true,
+                  enabled: !_waiting,
+                  minLines: 1,
+                  maxLines: 3,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: _send,
+                  style: Typo.body(14, color: Palette.ivory),
+                  decoration: InputDecoration(
+                    hintText: 'Type your question…',
+                    hintStyle: Typo.body(14, color: Palette.muted),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.04),
+                    contentPadding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
+                    // The send button sits inside the field, at the right.
+                    // A rounded square, concentric with the field: the
+                    // field's radius (14) minus the gap around it (6.5, the
+                    // same on the right as above and below; the right
+                    // padding includes ~2 px the field's frame takes).
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.5),
+                      child: IconButton.filled(
+                        tooltip: 'Send',
+                        onPressed: _waiting ? null : () => _send(_input.text),
+                        iconSize: 18,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        padding: EdgeInsets.zero,
+                        style: IconButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(7.5),
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: Palette.goldDeep.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: Palette.goldDeep.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(color: Palette.gold),
+                          backgroundColor: Palette.gold,
+                          foregroundColor: Palette.onyx,
+                          disabledBackgroundColor: Palette.goldDeep.withValues(
+                            alpha: 0.35,
                           ),
                         ),
+                        icon: const Icon(FluentIcons.send_24_filled),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton.filled(
-                      tooltip: 'Send',
-                      onPressed: _waiting ? null : () => _send(_input.text),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Palette.gold,
-                        foregroundColor: Palette.onyx,
-                      ),
-                      icon: const Icon(Icons.arrow_upward_rounded),
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 40.5,
+                      minHeight: 32,
                     ),
-                  ],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Palette.goldDeep.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Palette.goldDeep.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Palette.goldDeep.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Palette.gold),
+                    ),
+                  ),
                 ),
               ),
             ],

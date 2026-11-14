@@ -1,11 +1,11 @@
 {
-    "name": "mrchesscoach_flutter",
-    "short_name": "mrchesscoach_flutter",
+    "name": "Mr. Chess Coach",
+    "short_name": "Chess Coach",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B0A09",
+    "theme_color": "#0B0A09",
+    "description": "Play chess against a friendly coach who grades every move and trains you.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

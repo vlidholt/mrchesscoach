@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -502,14 +503,14 @@ class _GameScreenState extends State<GameScreen> {
               Text('MOVES', style: Typo.label()),
               const Spacer(),
               StepButton(
-                icon: Icons.chevron_left_rounded,
+                icon: FluentIcons.chevron_left_24_regular,
                 tooltip: 'Previous move (←)',
                 onTap: c.game.moves.isNotEmpty && (_viewPly ?? 0) > -1
                     ? () => _step(-1)
                     : null,
               ),
               StepButton(
-                icon: Icons.chevron_right_rounded,
+                icon: FluentIcons.chevron_right_24_regular,
                 tooltip: 'Next move (→)',
                 onTap: _viewPly != null ? () => _step(1) : null,
               ),
@@ -551,7 +552,7 @@ class _GameScreenState extends State<GameScreen> {
     return TopBar(
       onBack: () => Navigator.of(context).pop(),
       compact: compact,
-      title: lesson?.title ?? 'Coach',
+      title: lesson?.title ?? 'Mr. Chess Coach',
       subtitle: lesson != null
           ? Text(
               lesson.goal,
@@ -605,20 +606,24 @@ class _GameScreenState extends State<GameScreen> {
       return [
         ActionItem(
           label: 'Play again',
-          icon: Icons.replay_rounded,
+          icon: FluentIcons.arrow_counterclockwise_24_regular,
           busy: _startingRematch,
           onTap: _rematch,
         ),
         ActionItem(
           label: 'Review',
-          icon: Icons.insights_rounded,
+          icon: FluentIcons.data_trending_24_regular,
           highlight: true,
           onTap: _review,
         ),
-        ActionItem(label: 'Ask', icon: Icons.forum_outlined, onTap: _ask),
+        ActionItem(
+          label: 'Ask',
+          icon: FluentIcons.chat_multiple_24_regular,
+          onTap: _ask,
+        ),
         ActionItem(
           label: 'Take back',
-          icon: Icons.undo_rounded,
+          icon: FluentIcons.arrow_undo_24_regular,
           busy: c.pending == PendingAction.undo,
           onTap: c.canUndo ? c.undo : null,
         ),
@@ -628,7 +633,7 @@ class _GameScreenState extends State<GameScreen> {
     return [
       ActionItem(
         label: 'Resign',
-        icon: Icons.flag_outlined,
+        icon: FluentIcons.flag_24_regular,
         tooltip: 'Resign the game',
         busy: c.pending == PendingAction.resign,
         onTap: c.pending == null ? _resign : null,
@@ -639,7 +644,7 @@ class _GameScreenState extends State<GameScreen> {
           2 => 'Show me',
           _ => 'Hint',
         },
-        icon: Icons.lightbulb_outline_rounded,
+        icon: FluentIcons.lightbulb_24_regular,
         tooltip: 'Hint: first the idea, then the piece, then the move',
         highlight: c.hint != null,
         busy: c.pending == PendingAction.hint,
@@ -647,7 +652,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
       ActionItem(
         label: 'Threats',
-        icon: Icons.warning_amber_rounded,
+        icon: FluentIcons.warning_24_regular,
         tooltip: 'What am I threatening?',
         highlight: c.threat != null,
         busy: c.pending == PendingAction.threat,
@@ -655,13 +660,13 @@ class _GameScreenState extends State<GameScreen> {
       ),
       ActionItem(
         label: 'Ask',
-        icon: Icons.forum_outlined,
+        icon: FluentIcons.chat_multiple_24_regular,
         tooltip: 'Ask me about this position',
         onTap: _ask,
       ),
       ActionItem(
         label: 'Undo',
-        icon: Icons.undo_rounded,
+        icon: FluentIcons.arrow_undo_24_regular,
         tooltip: 'Take back your last move',
         busy: c.pending == PendingAction.undo,
         onTap: c.canUndo ? c.undo : null,
@@ -691,7 +696,10 @@ class _GameScreenState extends State<GameScreen> {
                 color: BoardArrow.threat,
               ),
           ];
-    final shownPly = viewPly ?? c.game.moves.length - 1;
+    // The ply of the move on the board. While a move waits for the server it
+    // is already shown (sanMoves) but not yet in game.moves; it has no
+    // verdict yet, so no badge from the previous ply may land on it.
+    final shownPly = viewPly ?? c.sanMoves.length - 1;
     final verdict = c.verdicts[shownPly];
     final showBadge =
         verdict != null &&
@@ -802,7 +810,7 @@ class _BrowsePill extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
-                  Icons.fast_forward_rounded,
+                  FluentIcons.fast_forward_24_regular,
                   size: 14,
                   color: Palette.onyx,
                 ),
@@ -1051,7 +1059,7 @@ class _GameOverCard extends StatelessWidget {
                         period: const Duration(milliseconds: 2800),
                         child: GoldButton(
                           label: 'Review with me',
-                          icon: Icons.insights_rounded,
+                          icon: FluentIcons.data_trending_24_regular,
                           onPressed: onReview,
                         ),
                       ),
@@ -1115,9 +1123,11 @@ class TopBar extends StatelessWidget {
 
   final VoidCallback onBack;
   final bool compact;
+
+  /// Without one, the bar only shows the subtitle.
   final String? title;
 
-  /// A small chip next to the title, e.g. the level.
+  /// A small chip next to the title, e.g. the level. Only shown with a [title].
   final String? titleBadge;
   final Widget? subtitle;
   final Widget? trailing;
@@ -1134,7 +1144,7 @@ class TopBar extends StatelessWidget {
               onPressed: onBack,
               tooltip: 'Back',
               icon: const Icon(
-                Icons.arrow_back_rounded,
+                FluentIcons.arrow_left_24_regular,
                 color: Palette.parchment,
               ),
             ),
@@ -1144,46 +1154,47 @@ class TopBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          title ?? 'Mr. Chess Coach',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: Typo.display(
-                            compact ? 24 : 28,
-                            color: Palette.gold,
-                          ),
-                        ),
-                      ),
-                      if (titleBadge case final badge?) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: Palette.goldDeep.withValues(alpha: 0.7),
-                            ),
-                          ),
+                  if (title case final title?)
+                    Row(
+                      children: [
+                        Flexible(
                           child: Text(
-                            badge,
-                            style: Typo.body(
-                              11,
-                              color: Palette.parchment,
-                              weight: FontWeight.w700,
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: Typo.display(
+                              compact ? 24 : 28,
+                              color: Palette.gold,
                             ),
                           ),
                         ),
+                        if (titleBadge case final badge?) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: Palette.goldDeep.withValues(alpha: 0.7),
+                              ),
+                            ),
+                            child: Text(
+                              badge,
+                              style: Typo.body(
+                                11,
+                                color: Palette.parchment,
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
                   if (subtitle case final s?) ...[
-                    const SizedBox(height: 2),
+                    if (title != null) const SizedBox(height: 2),
                     s,
                   ],
                 ],

@@ -398,7 +398,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mrchesscoachFlutter.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mrchesscoach_flutter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/mrchesscoach_flutter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mr. Chess Coach.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mr. Chess Coach";
 			};
 			name = Debug;
 		};
@@ -412,7 +412,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mrchesscoachFlutter.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mrchesscoach_flutter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/mrchesscoach_flutter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mr. Chess Coach.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mr. Chess Coach";
 			};
 			name = Release;
 		};
@@ -426,7 +426,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mrchesscoachFlutter.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mrchesscoach_flutter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/mrchesscoach_flutter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mr. Chess Coach.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mr. Chess Coach";
 			};
 			name = Profile;
 		};

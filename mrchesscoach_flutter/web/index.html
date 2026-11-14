@@ -18,21 +18,51 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Play chess against a friendly coach who grades every move and trains you.">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="mrchesscoach_flutter">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Mr. Chess Coach">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png"/>
+  <link rel="icon" href="favicon.ico" sizes="any"/>
 
-  <title>mrchesscoach_flutter</title>
+  <title>Mr. Chess Coach</title>
+  <meta name="theme-color" content="#0B0A09">
   <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; height: 100%; background: #0B0A09; }
+    /* Shown until the app paints its first frame. */
+    #splash {
+      position: fixed; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      background: radial-gradient(circle at 50% 38%, #2A2219 0%, #0B0A09 60%);
+      transition: opacity 300ms ease-out;
+    }
+    #splash img {
+      width: 112px; height: 112px;
+      box-sizing: border-box;
+      border: 3px solid #D4AF6A;
+      border-radius: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 28px rgba(212, 175, 106, 0.35);
+      animation: breathe 2.4s ease-in-out infinite;
+    }
+    @keyframes breathe { 50% { transform: scale(1.04); } }
+  </style>
 </head>
 <body>
+  <div id="splash"><img src="icons/Icon-192.png" alt="Mr. Chess Coach"></div>
+  <script>
+    window.addEventListener("flutter-first-frame", function () {
+      var splash = document.getElementById("splash");
+      if (!splash) return;
+      splash.style.opacity = "0";
+      setTimeout(function () { splash.remove(); }, 320);
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

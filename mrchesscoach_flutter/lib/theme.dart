@@ -349,6 +349,49 @@ class _InlayPainter extends CustomPainter {
   bool shouldRepaint(_InlayPainter oldDelegate) => false;
 }
 
+/// The app icon (the walnut-board knight tile from `app_icon/`), with a gold
+/// outline and a soft warm glow so it stands out on the brown backgrounds.
+class AppIcon extends StatelessWidget {
+  const AppIcon({super.key, this.size = 32});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(size * 0.225);
+    return Container(
+      width: size,
+      height: size,
+      foregroundDecoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(
+          color: Palette.gold,
+          width: max(1.2, size * 0.04),
+          strokeAlign: BorderSide.strokeAlignCenter,
+        ),
+      ),
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: size * 0.25,
+            offset: Offset(0, size * 0.08),
+          ),
+          BoxShadow(color: Palette.goldGlow, blurRadius: size * 0.4),
+        ],
+      ),
+      child: Image.asset(
+        'assets/images/app_icon.png',
+        width: size,
+        height: size,
+        filterQuality: FilterQuality.medium,
+        semanticLabel: 'Mr. Chess Coach',
+      ),
+    );
+  }
+}
+
 /// A dark glass panel with a hairline gold edge.
 class Panel extends StatelessWidget {
   const Panel({

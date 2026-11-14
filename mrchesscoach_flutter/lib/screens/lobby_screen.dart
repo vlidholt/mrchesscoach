@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -428,7 +429,7 @@ class PlayHome extends StatelessWidget {
     final secondary = game == null
         ? Builder(
             builder: (context) => _BigButton(
-              icon: Icons.extension_rounded,
+              icon: FluentIcons.puzzle_piece_24_regular,
               title: 'Puzzles',
               subtitle: 'Rated tactics, matched to you',
               primary: false,
@@ -677,7 +678,7 @@ class _BigButton extends StatelessWidget {
             ),
           ),
           Icon(
-            Icons.arrow_forward_rounded,
+            FluentIcons.arrow_right_24_regular,
             color: primary ? Palette.onyx : Palette.gold,
           ),
         ],
@@ -723,14 +724,33 @@ class _NewGameSheetState extends State<NewGameSheet> {
   late int _level = widget.level.clamp(0, widget.levels.length - 1);
   late ColorChoice _color = widget.color;
   late bool _coach = widget.coach;
-  late final _pages = PageController(
-    viewportFraction: 0.6,
-    initialPage: _level,
-  );
+  PageController? _controller;
+
+  PageController get _pages => _controller!;
+
+  /// One card per page, sized so the neighbours peek in at any width.
+  PageController _pagesFor(double width) {
+    final fraction = ((_LevelCard.height / _LevelCard.aspect + 16) / width)
+        .clamp(0.2, 1.0);
+    final old = _controller;
+    if (old != null && (old.viewportFraction - fraction).abs() < 0.01) {
+      return old;
+    }
+    final page = old != null && old.hasClients
+        ? (old.page ?? _level.toDouble()).round()
+        : _level;
+    if (old != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    }
+    return _controller = PageController(
+      viewportFraction: fraction,
+      initialPage: page,
+    );
+  }
 
   @override
   void dispose() {
-    _pages.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -784,48 +804,55 @@ class _NewGameSheetState extends State<NewGameSheet> {
             GoldText('How strong should I play?', style: Typo.display(30)),
             const SizedBox(height: 14),
             SizedBox(
-              height: 176,
+              height: _LevelCard.height + 8,
               child: Row(
                 children: [
                   StepArrow(
-                    icon: Icons.chevron_left_rounded,
+                    icon: FluentIcons.chevron_left_24_regular,
                     onTap: _level > 0 ? () => _go(_level - 1) : null,
                   ),
                   Expanded(
-                    child: PageView.builder(
-                      controller: _pages,
-                      itemCount: levels.length,
-                      onPageChanged: (i) => setState(() => _level = i),
-                      itemBuilder: (context, i) => AnimatedBuilder(
-                        animation: _pages,
-                        builder: (context, child) {
-                          final page =
-                              _pages.hasClients &&
-                                  _pages.position.haveDimensions
-                              ? _pages.page ?? _level.toDouble()
-                              : _level.toDouble();
-                          final d = (page - i).abs().clamp(0.0, 1.0);
-                          return Opacity(
-                            opacity: 1 - d * 0.55,
-                            child: Transform.scale(
-                              scale: 1 - d * 0.14,
-                              child: child,
+                    child: LayoutBuilder(
+                      builder: (context, box) {
+                        final pages = _pagesFor(box.maxWidth);
+                        return PageView.builder(
+                          controller: pages,
+                          itemCount: levels.length,
+                          onPageChanged: (i) => setState(() => _level = i),
+                          itemBuilder: (context, i) => AnimatedBuilder(
+                            animation: pages,
+                            builder: (context, child) {
+                              final page =
+                                  pages.hasClients &&
+                                      pages.position.haveDimensions
+                                  ? pages.page ?? _level.toDouble()
+                                  : _level.toDouble();
+                              final d = (page - i).abs().clamp(0.0, 1.0);
+                              return Opacity(
+                                opacity: 1 - d * 0.45,
+                                child: Transform.scale(
+                                  scale: 1 - d * 0.12,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: GestureDetector(
+                              onTap: () => _go(i),
+                              child: Center(
+                                child: _LevelCard(
+                                  level: levels[i],
+                                  count: levels.length,
+                                  selected: i == _level,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                        child: GestureDetector(
-                          onTap: () => _go(i),
-                          child: _LevelCard(
-                            level: levels[i],
-                            count: levels.length,
-                            selected: i == _level,
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                   StepArrow(
-                    icon: Icons.chevron_right_rounded,
+                    icon: FluentIcons.chevron_right_24_regular,
                     onTap: _level < levels.length - 1
                         ? () => _go(_level + 1)
                         : null,
@@ -833,7 +860,22 @@ class _NewGameSheetState extends State<NewGameSheet> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: Text(
+                  levels[_level].description,
+                  key: ValueKey(_level),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: Typo.body(13, color: Palette.parchment),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -926,6 +968,8 @@ class StepArrow extends StatelessWidget {
   }
 }
 
+/// A level as a playing card: tinted in the level's colour, with a piece
+/// from a pawn (Novice) up to the black king (Grandmaster).
 class _LevelCard extends StatelessWidget {
   const _LevelCard({
     required this.level,
@@ -933,124 +977,178 @@ class _LevelCard extends StatelessWidget {
     required this.selected,
   });
 
+  static const height = 196.0;
+
+  /// Height over width.
+  static const aspect = 1.42;
+
   final ChessLevel level;
   final int count;
   final bool selected;
 
-  CoachMood get _mood => switch (level.index) {
-    0 || 1 => CoachMood.happy,
-    2 || 3 => CoachMood.neutral,
-    _ => CoachMood.thoughtful,
-  };
+  static const _accents = [
+    Color(0xFF7FD08A), // Novice: green
+    Color(0xFF4FC7B5), // Beginner: teal
+    Color(0xFF5AA9E6), // Casual: blue
+    Color(0xFF8C8CF0), // Club player: indigo
+    Color(0xFFC07CE8), // Advanced: violet
+    Color(0xFFF08A5D), // Expert: orange
+    Color(0xFFE5524B), // Master: red
+    Color(0xFFFFC94A), // Grandmaster: gold
+  ];
+
+  static const _pieces = [
+    (Side.white, Role.pawn),
+    (Side.white, Role.knight),
+    (Side.white, Role.bishop),
+    (Side.white, Role.rook),
+    (Side.white, Role.queen),
+    (Side.white, Role.king),
+    (Side.black, Role.queen),
+    (Side.black, Role.king),
+  ];
+
+  static const _base = Color(0xFF14110D);
+
+  static String _thousands(int n) => n.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
 
   @override
   Widget build(BuildContext context) {
+    final i = level.index.clamp(0, _accents.length - 1);
+    final accent = _accents[i];
+    final light = Color.lerp(accent, Palette.ivory, 0.35)!;
+    final (side, role) = _pieces[i];
+    const w = height / aspect;
+    final radius = BorderRadius.circular(w * 0.08);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      width: w,
+      height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: radius,
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: selected
-              ? [const Color(0xFF41341F), const Color(0xFF1C1710)]
-              : [const Color(0xFF221E18), const Color(0xFF15120E)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(_base, accent, 0.42)!,
+            Color.lerp(_base, accent, 0.12)!,
+            const Color(0xFF100D0A),
+          ],
+          stops: const [0, 0.5, 1],
         ),
         border: Border.all(
-          color: selected
-              ? Palette.gold
-              : Palette.goldDeep.withValues(alpha: 0.35),
-          width: selected ? 1.4 : 0.8,
+          color: selected ? accent : accent.withValues(alpha: 0.6),
+          width: selected ? 2.2 : 1.4,
         ),
         boxShadow: [
+          const BoxShadow(
+            color: Color(0x88000000),
+            blurRadius: 14,
+            offset: Offset(0, 8),
+          ),
           if (selected)
             BoxShadow(
-              color: Palette.gold.withValues(alpha: 0.3),
+              color: accent.withValues(alpha: 0.45),
               blurRadius: 24,
-              spreadRadius: -4,
+              spreadRadius: -2,
             ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CoachAvatar(size: 40, mood: _mood),
-              const Spacer(),
-              StrengthMeter(value: level.index + 1, max: count, lit: selected),
-            ],
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(level.name, maxLines: 1, style: Typo.title(26)),
-          ),
-          Text(
-            '≈ ${level.rating} Elo',
-            style: Typo.body(
-              12,
-              color: selected ? Palette.gold : Palette.muted,
-              weight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            level.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Typo.body(12, color: Palette.parchment),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bars of rising height, lit up to [value].
-class StrengthMeter extends StatelessWidget {
-  const StrengthMeter({
-    super.key,
-    required this.value,
-    required this.max,
-    required this.lit,
-  });
-
-  final int value;
-  final int max;
-  final bool lit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        for (var i = 0; i < max; i++)
-          AnimatedContainer(
-            duration: Duration(milliseconds: 200 + i * 40),
-            margin: const EdgeInsets.only(left: 2),
-            width: 3.5,
-            height: 5 + i * 2.0,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2),
-              color: i < value
-                  ? (lit
-                        ? Palette.gold
-                        : Palette.parchment.withValues(alpha: 0.55))
-                  : Colors.white.withValues(alpha: 0.08),
-              boxShadow: [
-                if (lit && i < value)
-                  BoxShadow(
-                    color: Palette.gold.withValues(alpha: 0.5),
-                    blurRadius: 6,
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          children: [
+            // Light pooling behind the piece.
+            Align(
+              alignment: const Alignment(0, -0.32),
+              child: Container(
+                width: w * 1.24,
+                height: w * 1.24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      accent.withValues(alpha: selected ? 0.6 : 0.4),
+                      accent.withValues(alpha: 0),
+                    ],
                   ),
-              ],
+                ),
+              ),
             ),
-          ),
-      ],
+            Align(
+              alignment: const Alignment(0, -0.38),
+              child: Image.asset(
+                pieceAsset(side, role),
+                width: w * 0.6,
+                height: w * 0.6,
+              ),
+            ),
+            // Corner index, like a playing card.
+            Positioned(
+              left: w * 0.09,
+              top: w * 0.05,
+              child: Text(
+                '${level.index + 1}',
+                style: Typo.title(w * 0.24, color: light).copyWith(
+                  height: 1,
+                  shadows: const [
+                    Shadow(color: Color(0xAA000000), blurRadius: 8),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: const Alignment(0, 0.4),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: w * 0.07),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: GoldText(
+                    level.name,
+                    style: Typo.title(w * 0.19).copyWith(height: 1),
+                  ),
+                ),
+              ),
+            ),
+            // Strength pips: one lit per level.
+            Align(
+              alignment: const Alignment(0, 0.64),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var k = 0; k < count; k++)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: w * 0.017),
+                      child: Transform.rotate(
+                        angle: pi / 4,
+                        child: Container(
+                          width: w * 0.058,
+                          height: w * 0.058,
+                          color: k <= level.index
+                              ? light
+                              : Colors.white.withValues(alpha: 0.2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: const Alignment(0, 0.86),
+              child: Text(
+                _thousands(level.rating),
+                style: Typo.mono(
+                  w * 0.1,
+                  color: Palette.ivory,
+                ).copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1236,17 +1334,7 @@ class _Header extends StatelessWidget {
     final logo = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: wide ? 36 : 30,
-          height: wide ? 36 : 30,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Palette.gold, width: 1),
-            boxShadow: [BoxShadow(color: Palette.goldGlow, blurRadius: 12)],
-          ),
-          padding: const EdgeInsets.all(2),
-          child: Image.asset(pieceAsset(Side.white, Role.knight)),
-        ),
+        AppIcon(size: wide ? 38 : 32),
         const SizedBox(width: 10),
         GoldText('Mr. Chess Coach', style: Typo.display(wide ? 28 : 24)),
       ],
@@ -1254,7 +1342,7 @@ class _Header extends StatelessWidget {
     final signOut = IconButton(
       tooltip: 'Sign out',
       onPressed: () => client.auth.signOutDevice(),
-      icon: const Icon(Icons.logout_rounded, color: Palette.muted),
+      icon: const Icon(FluentIcons.sign_out_24_regular, color: Palette.muted),
     );
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -1275,10 +1363,15 @@ class _Header extends StatelessWidget {
   }
 }
 
+/// Label, icon, and the filled icon for the selected tab.
 const _tabItems = [
-  ('Play', Icons.sports_esports_rounded),
-  ('Learn', Icons.school_rounded),
-  ('Progress', Icons.insights_rounded),
+  ('Play', FluentIcons.chess_20_regular, FluentIcons.chess_20_filled),
+  ('Learn', FluentIcons.notepad_24_regular, FluentIcons.notepad_24_filled),
+  (
+    'Progress',
+    FluentIcons.data_bar_vertical_ascending_24_regular,
+    FluentIcons.data_bar_vertical_ascending_24_filled,
+  ),
 ];
 
 class _Tabs extends StatelessWidget {
@@ -1299,7 +1392,7 @@ class _Tabs extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final (i, (label, icon)) in _tabItems.indexed)
+          for (final (i, (label, icon, selectedIcon)) in _tabItems.indexed)
             Pressable(
               onTap: () => onTab(i),
               child: AnimatedContainer(
@@ -1328,7 +1421,7 @@ class _Tabs extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      icon,
+                      i == tab ? selectedIcon : icon,
                       size: 17,
                       color: i == tab ? Palette.onyx : Palette.parchment,
                     ),
@@ -1406,7 +1499,8 @@ class _BottomTabs extends StatelessWidget {
               ),
               Row(
                 children: [
-                  for (final (i, (label, icon)) in _tabItems.indexed)
+                  for (final (i, (label, icon, selectedIcon))
+                      in _tabItems.indexed)
                     Expanded(
                       child: Pressable(
                         onTap: () => onTab(i),
@@ -1418,7 +1512,7 @@ class _BottomTabs extends StatelessWidget {
                               scale: i == tab ? 1.15 : 1,
                               duration: const Duration(milliseconds: 300),
                               child: Icon(
-                                icon,
+                                i == tab ? selectedIcon : icon,
                                 size: 24,
                                 color: i == tab ? Palette.gold : Palette.muted,
                               ),
@@ -1470,7 +1564,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 20),
             GoldButton(
               label: 'Try again',
-              icon: Icons.refresh_rounded,
+              icon: FluentIcons.arrow_clockwise_24_regular,
               onPressed: onRetry,
             ),
           ],

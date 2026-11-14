@@ -74,12 +74,22 @@ class _SignInScreenState extends State<SignInScreen> {
     final title = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Shine(
-          period: const Duration(milliseconds: 4600),
-          child: GoldText(
-            'Mr. Chess Coach',
-            style: Typo.display(44),
-            align: TextAlign.center,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AppIcon(size: 44),
+              const SizedBox(width: 12),
+              Shine(
+                period: const Duration(milliseconds: 4600),
+                child: GoldText(
+                  'Mr. Chess Coach',
+                  style: Typo.display(44),
+                  align: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 6),

@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -498,14 +499,14 @@ class _OpeningScreenState extends State<OpeningScreen> {
             _Tag(
               clean ? 'BOOK MOVE' : 'THAT\'S IT',
               Palette.win,
-              icon: Icons.check_rounded,
+              icon: FluentIcons.checkmark_24_regular,
             ),
             Text(_moveLabel(ply, expected.san), style: BubbleText.move),
             if (_streak >= 3)
               _Tag(
                 '$_streak IN A ROW',
                 Palette.goldDeep,
-                icon: Icons.local_fire_department_rounded,
+                icon: FluentIcons.fire_24_filled,
               ),
           ],
         );
@@ -566,7 +567,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           _Tag(
             help >= 3 ? 'THE MOVE' : 'A CLUE',
             BoardArrow.idea,
-            icon: Icons.lightbulb_outline_rounded,
+            icon: FluentIcons.lightbulb_24_regular,
           ),
         ],
       );
@@ -595,7 +596,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           _Tag(
             flawless ? 'FLAWLESS' : 'COURSE COMPLETE',
             flawless ? Palette.goldDeep : Palette.win,
-            icon: Icons.emoji_events_rounded,
+            icon: FluentIcons.trophy_24_regular,
           ),
         ],
       );
@@ -753,7 +754,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
                         const SizedBox(height: 16),
                         GhostButton(
                           label: 'Try again',
-                          icon: Icons.refresh_rounded,
+                          icon: FluentIcons.arrow_clockwise_24_regular,
                           onPressed: _load,
                         ),
                       ],
@@ -924,12 +925,12 @@ class _OpeningScreenState extends State<OpeningScreen> {
                   const Spacer(),
                   if (learn) ...[
                     StepButton(
-                      icon: Icons.chevron_left_rounded,
+                      icon: FluentIcons.chevron_left_24_regular,
                       tooltip: 'Previous move (←)',
                       onTap: _shown > 0 ? () => _go(_shown - 1) : null,
                     ),
                     StepButton(
-                      icon: Icons.chevron_right_rounded,
+                      icon: FluentIcons.chevron_right_24_regular,
                       tooltip: 'Next move (→)',
                       onTap: _shown < _steps.length
                           ? () => _go(_shown + 1)
@@ -977,7 +978,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
               children: [
                 if (course.completed || _mode == _Mode.done) ...[
                   const Icon(
-                    Icons.verified_rounded,
+                    FluentIcons.checkmark_starburst_24_filled,
                     size: 13,
                     color: Palette.win,
                   ),
@@ -1093,7 +1094,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
               const _Tag(
                 'MAIN LINE DONE',
                 Palette.win,
-                icon: Icons.flag_rounded,
+                icon: FluentIcons.flag_24_filled,
               ),
               const SizedBox(height: 6),
               TypewriterText(
@@ -1284,13 +1285,13 @@ class _OpeningScreenState extends State<OpeningScreen> {
   List<ActionItem> _actions() {
     final ask = ActionItem(
       label: 'Ask',
-      icon: Icons.forum_outlined,
+      icon: FluentIcons.chat_multiple_24_regular,
       tooltip: 'Ask me about this position',
       onTap: _ask,
     );
     final traps = ActionItem(
       label: 'Traps',
-      icon: Icons.extension_rounded,
+      icon: FluentIcons.puzzle_piece_24_regular,
       tooltip: 'Traps and tactics in this opening',
       onTap: _traps,
     );
@@ -1300,13 +1301,15 @@ class _OpeningScreenState extends State<OpeningScreen> {
         return [
           ActionItem(
             label: 'Restart',
-            icon: Icons.first_page_rounded,
+            icon: FluentIcons.arrow_previous_24_regular,
             tooltip: 'Back to the starting position',
             onTap: _shown > 0 ? () => _go(0) : null,
           ),
           ActionItem(
             label: _playing ? 'Pause' : 'Auto-play',
-            icon: _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            icon: _playing
+                ? FluentIcons.pause_24_filled
+                : Icons.play_arrow_rounded,
             tooltip: 'Play through the line (space)',
             highlight: _playing,
             onTap: _toggleAutoplay,
@@ -1314,7 +1317,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           if (atEnd)
             ActionItem(
               label: 'Drill it',
-              icon: Icons.fitness_center_rounded,
+              icon: FluentIcons.dumbbell_24_regular,
               tooltip: 'Play your moves from memory',
               highlight: true,
               onTap: _startDrill,
@@ -1322,7 +1325,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           else
             ActionItem(
               label: 'Next',
-              icon: Icons.skip_next_rounded,
+              icon: FluentIcons.next_24_regular,
               tooltip: 'Next move (→)',
               highlight: _shown == 0 && !_playing,
               onTap: () => _go(_shown + 1),
@@ -1335,13 +1338,13 @@ class _OpeningScreenState extends State<OpeningScreen> {
         return [
           ActionItem(
             label: 'Restart',
-            icon: Icons.replay_rounded,
+            icon: FluentIcons.arrow_counterclockwise_24_regular,
             tooltip: 'Start the drill again',
             onTap: _startDrill,
           ),
           ActionItem(
             label: help >= 2 ? 'Show me' : 'Hint',
-            icon: Icons.lightbulb_outline_rounded,
+            icon: FluentIcons.lightbulb_24_regular,
             tooltip: 'First a clue, then the move',
             highlight: help >= 2,
             onTap: _studentToMove && help < 3 && _wrongPosition == null
@@ -1351,7 +1354,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           ask,
           ActionItem(
             label: 'Learn',
-            icon: Icons.menu_book_rounded,
+            icon: FluentIcons.book_open_24_regular,
             tooltip: 'Back to the walkthrough',
             onTap: _toLearn,
           ),
@@ -1361,7 +1364,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
         return [
           ActionItem(
             label: 'Again',
-            icon: Icons.replay_rounded,
+            icon: FluentIcons.arrow_counterclockwise_24_regular,
             tooltip: 'Drill it again',
             onTap: _startDrill,
           ),
@@ -1369,7 +1372,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
           traps,
           ActionItem(
             label: 'Play it out',
-            icon: Icons.sports_esports_rounded,
+            icon: FluentIcons.chess_20_regular,
             tooltip: 'Play on from here against me',
             highlight: true,
             busy: _starting,
@@ -1479,9 +1482,9 @@ class _ModeSwitch extends StatelessWidget {
           ),
           Row(
             children: [
-              tab('Learn', Icons.menu_book_rounded, !drill, onLearn),
+              tab('Learn', FluentIcons.book_open_24_regular, !drill, onLearn),
               const SizedBox(width: 2),
-              tab('Drill', Icons.fitness_center_rounded, drill, onDrill),
+              tab('Drill', FluentIcons.dumbbell_24_regular, drill, onDrill),
             ],
           ),
         ],
@@ -1697,7 +1700,7 @@ class _DrillStatus extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.local_fire_department_rounded,
+                      FluentIcons.fire_24_filled,
                       size: 16,
                       color: Color(0xFFF0A040),
                     ),
@@ -1796,7 +1799,7 @@ class _LevelPicker extends StatelessWidget {
       child: Row(
         children: [
           StepButton(
-            icon: Icons.chevron_left_rounded,
+            icon: FluentIcons.chevron_left_24_regular,
             tooltip: 'Easier',
             onTap: i > 0 ? () => onChanged(levels[i - 1].index) : null,
           ),
@@ -1833,7 +1836,7 @@ class _LevelPicker extends StatelessWidget {
             ),
           ),
           StepButton(
-            icon: Icons.chevron_right_rounded,
+            icon: FluentIcons.chevron_right_24_regular,
             tooltip: 'Stronger',
             onTap: i >= 0 && i < levels.length - 1
                 ? () => onChanged(levels[i + 1].index)
@@ -1913,7 +1916,7 @@ class _Ideas extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.only(top: 2),
                     child: Icon(
-                      Icons.check_circle_rounded,
+                      FluentIcons.checkmark_circle_24_filled,
                       size: 15,
                       color: Palette.goldDeep,
                     ),
@@ -2040,7 +2043,7 @@ class _CompleteCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.emoji_events_rounded,
+                              FluentIcons.trophy_24_regular,
                               size: 16,
                               color: Palette.gold,
                             ),
@@ -2092,7 +2095,7 @@ class _CompleteCard extends StatelessWidget {
                           period: const Duration(milliseconds: 2800),
                           child: GoldButton(
                             label: 'Play it out',
-                            icon: Icons.sports_esports_rounded,
+                            icon: FluentIcons.chess_20_regular,
                             busy: busy,
                             onPressed: onPlay,
                           ),

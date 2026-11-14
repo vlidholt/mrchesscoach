@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../game/chess_model.dart';
@@ -935,22 +936,22 @@ class _ReviewScreenState extends State<ReviewScreen> {
               Text('MOVES', style: Typo.label()),
               const Spacer(),
               StepButton(
-                icon: Icons.first_page_rounded,
+                icon: FluentIcons.arrow_previous_24_regular,
                 tooltip: 'Start (Home)',
                 onTap: i > -1 ? () => _select(-1) : null,
               ),
               StepButton(
-                icon: Icons.chevron_left_rounded,
+                icon: FluentIcons.chevron_left_24_regular,
                 tooltip: 'Previous move (←)',
                 onTap: i > -1 ? () => _step(-1) : null,
               ),
               StepButton(
-                icon: Icons.chevron_right_rounded,
+                icon: FluentIcons.chevron_right_24_regular,
                 tooltip: 'Next move (→)',
                 onTap: i < n - 1 ? () => _step(1) : null,
               ),
               StepButton(
-                icon: Icons.last_page_rounded,
+                icon: FluentIcons.arrow_next_24_regular,
                 tooltip: 'Last move (End)',
                 onTap: i < n - 1 ? () => _select(n - 1) : null,
               ),
@@ -999,7 +1000,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   tooltip: 'Ask me about this position',
                   onPressed: _ask,
                   icon: const Icon(
-                    Icons.forum_outlined,
+                    FluentIcons.chat_multiple_24_regular,
                     color: Palette.parchment,
                   ),
                 ),
@@ -1007,7 +1008,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   tooltip: 'Flip the board',
                   onPressed: _flip,
                   icon: const Icon(
-                    Icons.swap_vert_rounded,
+                    FluentIcons.arrow_sort_24_regular,
                     color: Palette.parchment,
                   ),
                 ),
@@ -1050,7 +1051,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return [
       ActionItem(
         label: _showBest ? 'My move' : 'Best',
-        icon: _showBest ? Icons.undo_rounded : Icons.auto_awesome_rounded,
+        icon: _showBest
+            ? FluentIcons.arrow_undo_24_regular
+            : FluentIcons.sparkle_24_regular,
         tooltip: _showBest
             ? 'Back to the move that was played'
             : 'Show the best move on the board',
@@ -1060,14 +1063,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ),
       ActionItem(
         label: 'Prev key',
-        icon: Icons.fast_rewind_rounded,
+        icon: FluentIcons.rewind_24_regular,
         tooltip: 'Previous key moment (↑)',
         onTap: keys ? () => _jumpKey(-1) : null,
       ),
       if (!wide)
         ActionItem(
           label: _summary ? 'Board' : 'Summary',
-          icon: _summary ? Icons.grid_on_rounded : Icons.insights_rounded,
+          icon: _summary
+              ? FluentIcons.grid_24_regular
+              : FluentIcons.data_trending_24_regular,
           tooltip: _summary
               ? 'Back to the board (S)'
               : 'Accuracy, graph and key moments (S)',
@@ -1076,14 +1081,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ),
       ActionItem(
         label: 'Next key',
-        icon: Icons.fast_forward_rounded,
+        icon: FluentIcons.fast_forward_24_regular,
         tooltip: 'Next key moment (↓)',
         highlight: keys && i < 0 && !_summary,
         onTap: keys ? () => _jumpKey(1) : null,
       ),
       ActionItem(
         label: 'Practice',
-        icon: Icons.fitness_center_rounded,
+        icon: FluentIcons.dumbbell_24_regular,
         tooltip: 'Practise positions from your mistakes',
         onTap: _practice,
       ),
@@ -1222,7 +1227,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   period: const Duration(milliseconds: 2800),
                   child: GoldButton(
                     label: 'Review with me',
-                    icon: Icons.insights_rounded,
+                    icon: FluentIcons.data_trending_24_regular,
                     onPressed: _startReview,
                   ),
                 ),
@@ -1449,15 +1454,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
             if (canBest)
               _InlineLink(
                 icon: _showBest
-                    ? Icons.undo_rounded
-                    : Icons.visibility_outlined,
+                    ? FluentIcons.arrow_undo_24_regular
+                    : FluentIcons.eye_24_regular,
                 label: _showBest ? 'Back to the game' : 'Show me ${a.bestSan}',
                 color: _paperGreen,
                 onTap: _toggleBest,
               ),
             if (a.explanation == null && !loading)
               _InlineLink(
-                icon: Icons.help_outline_rounded,
+                icon: FluentIcons.question_circle_24_regular,
                 label: failed ? 'Ask again' : 'Why?',
                 onTap: () => _explain(i),
               ),
@@ -1848,7 +1853,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           Row(
             children: [
               const Icon(
-                Icons.menu_book_rounded,
+                FluentIcons.book_open_24_regular,
                 size: 15,
                 color: Palette.gold,
               ),
@@ -2238,7 +2243,7 @@ class _ErrorView extends StatelessWidget {
                   const SizedBox(height: 24),
                   GoldButton(
                     label: 'Try again',
-                    icon: Icons.refresh_rounded,
+                    icon: FluentIcons.arrow_clockwise_24_regular,
                     onPressed: onRetry,
                   ),
                   const SizedBox(height: 6),
@@ -2535,7 +2540,11 @@ class _ChanceShift extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 3),
-          child: Icon(Icons.arrow_right_alt_rounded, size: 16, color: color),
+          child: Icon(
+            FluentIcons.arrow_right_16_regular,
+            size: 16,
+            color: color,
+          ),
         ),
         Text(
           '${after.round()}%',
@@ -2577,7 +2586,11 @@ class _BoardPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star_rounded, size: 14, color: BoardArrow.best),
+          const Icon(
+            FluentIcons.star_24_filled,
+            size: 14,
+            color: BoardArrow.best,
+          ),
           const SizedBox(width: 6),
           Text(text, style: Typo.label(color: BoardArrow.best, size: 10)),
         ],

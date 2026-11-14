@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mrchesscoach_client/mrchesscoach_client.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import '../client.dart';
 import '../theme.dart';
@@ -270,7 +271,10 @@ class _Intro extends StatelessWidget {
                     color: Palette.gold,
                   ),
                 )
-              : const Icon(Icons.refresh_rounded, color: Palette.muted),
+              : const Icon(
+                  FluentIcons.arrow_clockwise_24_regular,
+                  color: Palette.muted,
+                ),
         ),
       ],
     );
@@ -373,31 +377,35 @@ class _PlanPanel extends StatelessWidget {
 ({IconData icon, String label, String cta}) _kindStyle(String kind) =>
     switch (kind) {
       'puzzles' => (
-        icon: Icons.extension_rounded,
+        icon: FluentIcons.puzzle_piece_24_regular,
         label: 'PUZZLES',
         cta: 'Solve puzzles',
       ),
       'lesson' => (
-        icon: Icons.school_rounded,
+        icon: FluentIcons.notepad_24_regular,
         label: 'LESSON',
         cta: 'Start the lesson',
       ),
       'opening' => (
-        icon: Icons.menu_book_rounded,
+        icon: FluentIcons.book_open_24_regular,
         label: 'OPENING',
         cta: 'Study the opening',
       ),
       'mistakes' => (
-        icon: Icons.replay_rounded,
+        icon: FluentIcons.arrow_counterclockwise_24_regular,
         label: 'REVIEW',
         cta: 'Review mistakes',
       ),
       'play' => (
-        icon: Icons.sports_esports_rounded,
+        icon: FluentIcons.chess_20_regular,
         label: 'PLAY',
         cta: 'Play a game',
       ),
-      _ => (icon: Icons.auto_awesome_rounded, label: 'PRACTICE', cta: 'Begin'),
+      _ => (
+        icon: FluentIcons.sparkle_24_regular,
+        label: 'PRACTICE',
+        cta: 'Begin',
+      ),
     };
 
 class _RecommendationCard extends StatefulWidget {
@@ -536,7 +544,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                         curve: Curves.easeOut,
                         padding: EdgeInsets.only(left: _hover ? 10 : 6),
                         child: const Icon(
-                          Icons.arrow_forward_rounded,
+                          FluentIcons.arrow_right_24_regular,
                           size: 18,
                           color: Palette.gold,
                         ),
@@ -574,7 +582,7 @@ class _StatTiles extends StatelessWidget {
     final tiles = <Widget>[
       _StatTile(
         icon: const Icon(
-          Icons.extension_rounded,
+          FluentIcons.puzzle_piece_24_regular,
           size: 18,
           color: Palette.gold,
         ),
@@ -606,7 +614,11 @@ class _StatTiles extends StatelessWidget {
         ),
       ),
       _StatTile(
-        icon: const Icon(Icons.bolt_rounded, size: 20, color: Palette.gold),
+        icon: const Icon(
+          FluentIcons.flash_24_filled,
+          size: 20,
+          color: Palette.gold,
+        ),
         label: 'PUZZLE STREAK',
         value: _CountUp(p.puzzleStreak.toDouble(), style: Typo.display(46)),
         unit: 'in a row',
@@ -621,7 +633,7 @@ class _StatTiles extends StatelessWidget {
       ),
       _StatTile(
         icon: const Icon(
-          Icons.emoji_events_rounded,
+          FluentIcons.trophy_24_regular,
           size: 18,
           color: Palette.gold,
         ),
@@ -632,7 +644,7 @@ class _StatTiles extends StatelessWidget {
       ),
       _StatTile(
         icon: const Icon(
-          Icons.track_changes_rounded,
+          FluentIcons.target_arrow_24_regular,
           size: 18,
           color: Palette.gold,
         ),
@@ -911,7 +923,7 @@ class _FlameState extends State<_Flame> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (!widget.active) {
       return const Icon(
-        Icons.local_fire_department_outlined,
+        FluentIcons.fire_24_regular,
         size: 20,
         color: Palette.muted,
       );
@@ -942,7 +954,7 @@ class _FlameState extends State<_Flame> with SingleTickerProviderStateMixin {
           colors: [Color(0xFFE5532D), _flame, Color(0xFFFFD36E)],
         ).createShader(rect),
         child: const Icon(
-          Icons.local_fire_department_rounded,
+          FluentIcons.fire_24_filled,
           size: 22,
           color: Colors.white,
         ),
@@ -962,10 +974,10 @@ class _DeltaChip extends StatelessWidget {
         ? Palette.win
         : (delta < 0 ? Palette.loss : Palette.draw);
     final icon = delta > 0
-        ? Icons.trending_up_rounded
+        ? FluentIcons.arrow_trending_24_regular
         : (delta < 0
-              ? Icons.trending_down_rounded
-              : Icons.trending_flat_rounded);
+              ? FluentIcons.arrow_trending_down_24_regular
+              : FluentIcons.arrow_right_24_regular);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -1018,7 +1030,7 @@ class _RatingPanel extends StatelessWidget {
           const SizedBox(height: 18),
           if (!enough)
             const _EmptyChart(
-              icon: Icons.show_chart_rounded,
+              icon: FluentIcons.data_line_24_regular,
               text: 'Solve a few rated puzzles to see your rating curve',
             )
           else ...[
@@ -1244,7 +1256,7 @@ class _AccuracyPanel extends StatelessWidget {
           const SizedBox(height: 18),
           if (shown.isEmpty)
             const _EmptyChart(
-              icon: Icons.bar_chart_rounded,
+              icon: FluentIcons.data_bar_vertical_24_regular,
               text: 'Finish a game with the coach to see your accuracy',
             )
           else ...[
@@ -1481,7 +1493,7 @@ class _ThemesPanelState extends State<_ThemesPanel> {
           const SizedBox(height: 16),
           if (stats.isEmpty)
             const _EmptyNote(
-              icon: Icons.extension_rounded,
+              icon: FluentIcons.puzzle_piece_24_regular,
               text: 'Solve some puzzles to discover your strongest themes.',
             )
           else ...[
@@ -1491,12 +1503,12 @@ class _ThemesPanelState extends State<_ThemesPanel> {
                 runSpacing: 8,
                 children: [
                   _Pill(
-                    icon: Icons.trending_up_rounded,
+                    icon: FluentIcons.arrow_trending_24_regular,
                     color: Palette.win,
                     text: 'Strongest · ${stats.first.name}',
                   ),
                   _Pill(
-                    icon: Icons.flag_rounded,
+                    icon: FluentIcons.flag_24_filled,
                     color: Palette.loss,
                     text: 'Work on · ${stats.last.name}',
                   ),
@@ -1530,8 +1542,8 @@ class _ThemesPanelState extends State<_ThemesPanel> {
                   ),
                   icon: Icon(
                     _all
-                        ? Icons.expand_less_rounded
-                        : Icons.expand_more_rounded,
+                        ? FluentIcons.chevron_up_24_regular
+                        : FluentIcons.chevron_down_24_regular,
                     size: 18,
                   ),
                   label: Text(
@@ -1577,7 +1589,7 @@ class _MotifsPanel extends StatelessWidget {
           const SizedBox(height: 16),
           if (sorted.isEmpty)
             const _EmptyNote(
-              icon: Icons.verified_rounded,
+              icon: FluentIcons.checkmark_starburst_24_filled,
               text:
                   'No recurring mistakes spotted yet. Play a few games with '
                   'the coach and I will find your patterns.',
@@ -1800,7 +1812,7 @@ class _MoveQualityPanel extends StatelessWidget {
           const SizedBox(height: 16),
           if (entries.isEmpty)
             const _EmptyNote(
-              icon: Icons.star_outline_rounded,
+              icon: FluentIcons.star_24_regular,
               text:
                   'Finish a game with the coach and your move verdicts will '
                   'show up here.',
@@ -1980,21 +1992,21 @@ class _LearningPanel extends StatelessWidget {
     final review = p.mistakesToReview;
     final items = [
       _LogItem(
-        icon: Icons.school_rounded,
+        icon: FluentIcons.notepad_24_regular,
         value: p.lessonsCompleted,
         label: p.lessonsCompleted == 1
             ? 'Lesson completed'
             : 'Lessons completed',
       ),
       _LogItem(
-        icon: Icons.menu_book_rounded,
+        icon: FluentIcons.book_open_24_regular,
         value: p.openingsCompleted,
         label: p.openingsCompleted == 1
             ? 'Opening completed'
             : 'Openings completed',
       ),
       _LogItem(
-        icon: Icons.extension_rounded,
+        icon: FluentIcons.puzzle_piece_24_regular,
         value: p.puzzlesSolved,
         label: p.puzzlesSolved == 1 ? 'Puzzle solved' : 'Puzzles solved',
         note: attempts == 0
@@ -2002,7 +2014,7 @@ class _LearningPanel extends StatelessWidget {
             : '${(p.puzzlesSolved / attempts * 100).round()}% success',
       ),
       _LogItem(
-        icon: Icons.replay_rounded,
+        icon: FluentIcons.arrow_counterclockwise_24_regular,
         value: review,
         label: 'Mistakes to review',
         accent: review > 0 ? Palette.loss : Palette.win,
@@ -2131,7 +2143,7 @@ class _LogItemState extends State<_LogItem> {
                               duration: const Duration(milliseconds: 180),
                               padding: EdgeInsets.only(left: lit ? 8 : 4),
                               child: Icon(
-                                Icons.arrow_forward_rounded,
+                                FluentIcons.arrow_right_24_regular,
                                 size: 14,
                                 color: accent,
                               ),
@@ -2448,7 +2460,7 @@ class _ErrorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.cloud_off_rounded,
+              FluentIcons.cloud_off_24_regular,
               size: 40,
               color: Palette.goldDeep,
             ),
@@ -2467,7 +2479,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 20),
             GoldButton(
               label: 'Try again',
-              icon: Icons.refresh_rounded,
+              icon: FluentIcons.arrow_clockwise_24_regular,
               onPressed: onRetry,
             ),
           ],

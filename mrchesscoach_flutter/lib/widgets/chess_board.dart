@@ -148,11 +148,18 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     if (widget.effects) {
       final badge = widget.badge;
       if (badge != null && badge != old.badge) {
-        _later(_slide, () => _verdictFx(badge.$1, badge.$2));
+        // Skip the flare if the badge is gone by then (a quick take-back).
+        _later(_slide, () {
+          if (widget.badge == badge) _verdictFx(badge.$1, badge.$2);
+        });
       }
       if (widget.inCheck && !old.inCheck) {
         final king = widget.position.kingOf(widget.position.turn);
-        if (king != null) _later(_slide, () => _checkFx(king));
+        if (king != null) {
+          _later(_slide, () {
+            if (widget.inCheck && widget.effects) _checkFx(king);
+          });
+        }
       }
     }
     if (widget.legalMoves.isEmpty) {
